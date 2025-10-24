@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mi Dashboard - Spendly</title>
+    <style>
+        body { font-family: sans-serif; max-width: 900px; margin: auto; padding: 20px; }
+        .container { display: flex; gap: 40px; }
+        .col-main { flex: 2; }
+        .col-side { flex: 1; }
+        .gasto { color: red; }
+        .ingreso { color: green; }
+        form { border: 1px solid #ccc; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        li { margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+
+    <h1>¡Hola, {{ user.username }}!</h1>
+    <form action="{% url 'logout' %}" method="post" style="border: none; padding: 0;">
+        {% csrf_token %}
+        <button type="submit">Cerrar Sesión</button>
+    </form>
+
+    <hr>
+
+    <div class="container">
+        <div class="col-main">
+
+            <form method="post">
+                <h3>Agregar Transacción</h3>
+                {% csrf_token %}
+                {{ t_form.as_p }}
+                <button type="submit" name="submit_transaction">Guardar Transacción</button>
+            </form>
+
+            <h2>Mis Transacciones</h2>
+            <ul>
+                {% for t in transactions %}
+                    <li>
+                        {{ t.date|date:"d/m/Y" }} - 
+                        <strong>{{ t.description }}</strong>
+                        {% if t.category %}({{ t.category.name }}){% endif %}
+
+                        <span class_="{{ t.type }}">
+                            ${{ t.amount }}
+                        </span>
+                    </li>
+                {% empty %}
+                    <li>Aún no tenés transacciones registradas.</li>
+                {% endfor %}
+            </ul>
+
+        </div>
+
+        <div class="col-side">
+
+            <form method="post">
+                <h3>Agregar Categoría</h3>
+                {% csrf_token %}
+                {{ c_form.as_p }}
+                <button type="submit" name="submit_category">Crear Categoría</button>
+            </form>
+
+            <h2>Mis Categorías</h2>
+            <ul>
+                {% for c in categories %}
+                    <li>{{ c.name }}</li>
+                {% empty %}
+                    <li>No tenés categorías.</li>
+                {% endfor %}
+            </ul>
+
+        </div>
+    </div>
+
+</body>
+</html>
