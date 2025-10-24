@@ -1,9 +1,8 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Registro - Spendly</title>
-</head>
-<body>
+{% extends "base.html" %}
+
+{% block title %}Registro - Spendly{% endblock %}
+
+{% block content %}
     <h2>Registrarse</h2>
     <form method="post">
         {% csrf_token %}
@@ -11,5 +10,4 @@
         <button type="submit">Crear cuenta</button>
     </form>
     <p>¿Ya tenés cuenta? <a href="{% url 'login' %}">Iniciá Sesión</a></p>
-</body>
-</html>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Administrar Tarjetas - Spendly{% endblock %}
+
+{% block content %}
+<body>
+    <a href="{% url 'index' %}">&larr; Volver al Dashboard</a>
+    <h1>Administrar Tarjetas</h1>
+    <p>Registrá el resumen de tus tarjetas para saber cuánto tenés que pagar.</p>
+
+    <form method="post">
+        <h3>Agregar Tarjeta</h3>
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Guardar</ta>
+    </form>
+
+    <h2>Mis Tarjetas</h2>
+    <ul>
+        {% for item in items %}
+        <li>
+            <span>
+                <strong>{{ item.name }}</strong> 
+                (Vence el día {{ item.due_date }})
+                - <span style="color:red; font-weight: bold;">Monto a Pagar: ${{ item.balance_due }}</span>
+            </span>
+
+            <form action="{% url 'delete_card' item.pk %}" method="post" style="border:none; margin:0; padding:0;">
+                {% csrf_token %}
+                <button type="submit">Eliminar</button>
+            </form>
+        </li>
+        {% empty %}
+        <li>No tenés tarjetas registradas.</li>
+        {% endfor %}
+    </ul>
+</body>
+{% endblock %}

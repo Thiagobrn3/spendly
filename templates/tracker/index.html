@@ -1,78 +1,109 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Mi Dashboard - Spendly</title>
-    <style>
-        body { font-family: sans-serif; max-width: 900px; margin: auto; padding: 20px; }
-        .container { display: flex; gap: 40px; }
-        .col-main { flex: 2; }
-        .col-side { flex: 1; }
-        .gasto { color: red; }
-        .ingreso { color: green; }
-        form { border: 1px solid #ccc; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
-        li { margin-bottom: 5px; }
-    </style>
-</head>
-<body>
+{% extends "base.html" %}
 
+{% block title %}Dashboard - Spendly{% endblock %}
+
+{% block content %}
     <h1>¡Hola, {{ user.username }}!</h1>
-    <form action="{% url 'logout' %}" method="post" style="border: none; padding: 0;">
-        {% csrf_token %}
-        <button type="submit">Cerrar Sesión</button>
-    </form>
-
-    <hr>
-
-    <div class="container">
-        <div class="col-main">
-
+    
+    <div class="grid">
+        
+        <section>
             <form method="post">
-                <h3>Agregar Transacción</h3>
+                <h4>Agregar Transacción</h4>
                 {% csrf_token %}
                 {{ t_form.as_p }}
                 <button type="submit" name="submit_transaction">Guardar Transacción</button>
             </form>
 
-            <h2>Mis Transacciones</h2>
-            <ul>
-                {% for t in transactions %}
-                    <li>
-                        {{ t.date|date:"d/m/Y" }} - 
-                        <strong>{{ t.description }}</strong>
-                        {% if t.category %}({{ t.category.name }}){% endif %}
+            <h4>Mis Transacciones</h4>
+            <figure>
+                <table>
+                    <thead>
+                        <tr>
+                            <th scope="col">Fecha</th>
+                            <th scope="col">Descripción</th>
+                            <th scope="col">Categoría</th>
+                            <th scope="col">Monto</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for t in transactions %}
+                        <tr>
+                            <td>{{ t.date|date:"d/m/Y" }}</td>
+                            <td><strong>{{ t.description }}</strong></td>
+                            <td>{% if t.category %}{{ t.category.name }}{% endif %}</td>
+                            <td class_="{{ t.type }}">
+                                {% if t.type == 'gasto' %}-{% else %}+{% endif %}
+                                ${{ t.amount }}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4">Aún no tenés transacciones.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </figure>
+        </section>
 
-                        <span class_="{{ t.type }}">
-                            ${{ t.amount }}
-                        </span>
-                    </li>
-                {% empty %}
-                    <li>Aún no tenés transacciones registradas.</li>
-                {% endfor %}
-            </ul>
-
-        </div>
-
-        <div class="col-side">
-
+        <section>
             <form method="post">
-                <h3>Agregar Categoría</h3>
+                <h4>Agregar Categoría</h4>
                 {% csrf_token %}
                 {{ c_form.as_p }}
                 <button type="submit" name="submit_category">Crear Categoría</button>
             </form>
 
-            <h2>Mis Categorías</h2>
+            <h4>Mis Categorías</h4>
             <ul>
                 {% for c in categories %}
-                    <li>{{ c.name }}</li>
+                <li>{{ c.name }}</li>
                 {% empty %}
-                    <li>No tenés categorías.</li>
+                <li>No tenés categorías.</li>
                 {% endfor %}
             </ul>
 
-        </div>
-    </div>
+            <hr>
+            <h3>Resumen del Mes</h3>
+            <h4>Total Gastado: 
+                <span class="gasto">${{ total_spent_month|floatformat:2 }}</span>
+            </h4>
+            
+            <div style="width: 100%;">
+                <canvas id="myPieChart"></canvas>
+            </div>
+        </section>
 
-</body>
-</html>
+    </div> {{ chart_labels|json_script:"chart-labels" }}
+    {{ chart_data|json_script:"chart-data" }}
+
+    <script>
+        // El código JS del gráfico va aquí (es el mismo de antes)
+        // ... (copiá y pegá el script de Chart.js que ya teníamos) ...
+        const ctx = document.getElementById('myPieChart').getContext('2d');
+        const chartLabels = JSON.parse(document.getElementById('chart-labels').textContent);
+        const chartData = JSON.parse(document.getElementById('chart-data').textContent);
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: chartLabels,
+                datasets: [{
+                    label: 'Gastos del mes',
+                    data: chartData,
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.7)', 'rgba(54, 162, 235, 0.7)',
+                        'rgba(255, 206, 86, 0.7)', 'rgba(75, 192, 192, 0.7)',
+                        'rgba(153, 102, 255, 0.7)', 'rgba(255, 159, 64, 0.7)'
+                    ],
+                }]
+            },
+            options: { responsive: true }
+        });
+    </script>
+
+    <style>
+        .gasto { color: #d32f2f; }
+        .ingreso { color: #388e3c; }
+    </style>
+{% endblock %}

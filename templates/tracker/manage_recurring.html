@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Administrar Fijos - Spendly{% endblock %}
+
+{% block content %}
+<body>
+    <a href="{% url 'index' %}">&larr; Volver al Dashboard</a>
+    <h1>Administrar Ingresos/Gastos Fijos</h1>
+    <p>Registrá aquí tus gastos o ingresos que se repiten (ej. Alquiler, Sueldo, Netflix).</p>
+
+    <form method="post">
+        <h3>Agregar Nuevo</h3>
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Guardar</button>
+    </form>
+
+    <h2>Mis Fijos</h2>
+    <ul>
+        {% for item in items %}
+        <li>
+            <span>
+                <strong>{{ item.description }}</strong> ({{ item.get_frequency_display }})
+                <span class_="{{ item.type }}">${{ item.amount }}</span>
+                {% if item.category %}({{ item.category.name }}){% endif %}
+            </span>
+
+            <form action="{% url 'delete_recurring' item.pk %}" method="post" style="border:none; margin:0; padding:0;">
+                {% csrf_token %}
+                <button type="submit">Eliminar</button>
+            </form>
+        </li>
+        {% empty %}
+        <li>No tenés items recurrentes.</li>
+        {% endfor %}
+    </ul>
+
+</body>
+{% endblock %}
