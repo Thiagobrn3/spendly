@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es" data-bs-theme="dark">
+<html lang="es">
 
 <head>
     <meta charset="utf-8">
@@ -11,107 +11,121 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        /* 1. Sobreescribimos los colores del tema oscuro de Bootstrap */
-        [data-bs-theme="dark"] {
-            /* Fondo de página (de la paleta) */
-            --bs-body-bg: #142126;
-
-            /* Color del texto principal (un blanco suave para legibilidad) */
-            --bs-body-color: #e2e8f0;
-
-            /* Fondo de las "tarjetas" (de la paleta) */
-            --bs-card-bg: #395953;
-
-            /* Fondo de los inputs (igual que las cards) */
-            --bs-form-control-bg: #395953;
-            /* Color del texto de los inputs */
-            --bs-form-control-color: #e2e8f0;
-
-            /* Color de los bordes (de la paleta) */
-            --bs-border-color: #5A8C83;
-
-            /* Colores de la tabla */
-            --bs-table-bg: #395953;
-            /* Un tono intermedio para las rayas de la tabla */
-            --bs-table-striped-bg: #314a45;
-            --bs-table-color: #e2e8f0;
-
-            /* Sobreescribimos el color 'dark' para el navbar (mismo que el fondo) */
-            --bs-dark-rgb: 20, 33, 38;
-            /* El RGB de #142126 */
+        /* 1. Paleta de Colores del Cliente */
+        :root {
+            --bg-main: #F9FAFB;
+            --text-main: #1E1E1E;
+            --brand-lila: #7A5AF8;
+            --brand-menta: #4ED9C1;
+            --brand-menta-dark: #3CB6A3;
+            --brand-violeta: #8A7CFF;
+            --text-gray: #5F6368;
+            --card-bg: #FFFFFF;
+            --card-shadow: #E5E7EB;
         }
 
-        /* 2. Sobreescribimos los colores 'info' para botones (el azul brillante) */
-        .btn-info {
-            --bs-btn-color: #fff;
-            /* Texto blanco, más legible */
-            --bs-btn-bg: #1AA3D9;
-            --bs-btn-border-color: #1AA3D9;
-            --bs-btn-hover-color: #fff;
-            --bs-btn-hover-bg: #168ac0;
-            /* Un poco más oscuro al pasar el mouse */
-            --bs-btn-hover-border-color: #1581b5;
-            --bs-btn-active-bg: #1581b5;
-            --bs-btn-active-border-color: #1477aa;
+        /* 2. Aplicación a la página */
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
         }
 
-        .btn-outline-info {
-            --bs-btn-color: #1AA3D9;
-            --bs-btn-border-color: #1AA3D9;
-            --bs-btn-hover-color: #fff;
-            /* Texto blanco al pasar el mouse */
-            --bs-btn-hover-bg: #1AA3D9;
-            --bs-btn-hover-border-color: #1AA3D9;
-        }
-
-        /* 3. Colores del Navbar */
-        .navbar-dark .navbar-nav .nav-link {
-            color: #80D9D5;
-            /* El teal claro para los links del menu */
-        }
-
-        .navbar-dark .navbar-nav .nav-link.active,
-        .navbar-dark .navbar-nav .nav-link:hover {
-            color: #fff;
-            /* Blanco al estar activo o hover */
-        }
-
-        .navbar-dark .navbar-brand {
-            color: #1AA3D9;
-            /* El azul brillante para la marca "Spendly" */
-            font-weight: bold;
-        }
-
-        /* 4. Nuestros colores personalizados de ingreso/gasto */
-        /* (Usamos colores vibrantes que combinan) */
-        .gasto {
-            color: #f472b6;
-            font-weight: bold;
-        }
-
-        /* Rosa */
-        .ingreso {
-            color: #4ade80;
-            font-weight: bold;
-        }
-
-        /* Verde lima */
-
-        /* 5. Regla para "marcar" el navbar */
-        .navbar-bordered {
-            /* Borde con el color teal medio */
-            border-bottom: 1px solid var(--bs-border-color);
-        }
-
-        /* 6. Regla para remover los bordes de las cards */
+        /* 3. Estilo de las Cards (como en tu diseño) */
         .card {
-            border: none;
-            /* Saca el borde exterior de la card */
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-shadow);
+            /* Sombra sutil y bordes redondeados */
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+            border-radius: 0.75rem;
         }
 
         .card-header {
-            border-bottom: none;
-            /* Saca la línea de abajo del título */
+            background-color: transparent;
+            border-bottom: 1px solid var(--card-shadow);
+        }
+
+        /* 4. Navbar (fondo blanco, texto gris) */
+        .navbar {
+            background-color: var(--card-bg) !important;
+            border-bottom: 1px solid var(--card-shadow);
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        .navbar .navbar-brand {
+            color: var(--brand-lila) !important;
+            /* Logo Lila */
+            font-weight: bold;
+        }
+
+        .navbar .nav-link {
+            color: var(--text-gray) !important;
+            /* Texto Gris */
+        }
+
+        .navbar .nav-link.active,
+        .navbar .nav-link:hover {
+            color: var(--text-main) !important;
+            /* Texto Oscuro */
+        }
+
+        /* 5. Definición de Botones */
+
+        /* Botón Primario (Verde Menta) */
+        .btn-primary {
+            background-color: var(--brand-menta);
+            border-color: var(--brand-menta);
+            color: var(--text-main);
+            font-weight: 500;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--brand-menta-dark);
+            border-color: var(--brand-menta-dark);
+        }
+
+        /* Botón Secundario (Violeta Pastel) */
+        .btn-secondary {
+            background-color: var(--brand-violeta);
+            border-color: var(--brand-violeta);
+            color: #FFFFFF;
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--brand-lila);
+            border-color: var(--brand-lila);
+        }
+
+        /* 6. Formularios */
+        .form-control,
+        .form-select {
+            background-color: var(--bg-main);
+            /* Fondo gris claro */
+            border: 1px solid var(--card-shadow);
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            background-color: var(--card-bg);
+            border-color: var(--brand-lila);
+            box-shadow: 0 0 0 0.25rem rgba(122, 90, 248, 0.25);
+        }
+
+        /* 7. Links y Colores de Gasto/Ingreso */
+        a {
+            color: var(--brand-lila);
+            text-decoration: none;
+        }
+
+        .gasto {
+            color: #E11D48;
+            /* Rojo Fuerte */
+            font-weight: bold;
+        }
+
+        .ingreso {
+            color: #16A34A;
+            /* Verde Fuerte */
+            font-weight: bold;
         }
     </style>
 
@@ -143,7 +157,7 @@
                 </ul>
                 <form action="{% url 'logout' %}" method="post" class="d-flex">
                     {% csrf_token %}
-                    <button class="btn btn-outline-light" type="submit">Cerrar Sesión</button>
+                    <button class="btn btn-secondary" type="submit">Cerrar Sesión</button>
                 </form>
 
                 {% else %}
