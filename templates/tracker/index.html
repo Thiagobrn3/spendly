@@ -9,72 +9,90 @@
 
         <div class="card mb-4">
             <div class="card-header">
-                <h4>Agregar Transacción</h4>
+                <h4>Agregar movimiento</h4>
             </div>
             <div class="card-body">
                 <form method="post">
                     {% csrf_token %}
-                    {{ t_form|crispy }}
-                    <button type="submit" class="btn-primary" name="submit_transaction">Guardar Transacción</button>
-                </form>
-            </div>
-        </div>
-        <div class="card mb-4">
-            <div class="card-body">
-                <form method="GET" action="{% url 'index' %}">
-                    <div class="row g-3 align-items-end">
-                        <div class="col-md-5">
-                            <label for="start_date" class="form-label">Fecha Desde</label>
-                            <input type="date" class="form-control" id="start_date" name="start_date"
-                                value="{{ start_date_str }}">
+                    
+                    <div class="mb-3">
+                        <label for="{{ t_form.type.id_for_label }}" class="form-label">{{ t_form.type.label }}</label>
+                        {{ t_form.type }}
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="{{ t_form.amount.id_for_label }}" class="form-label">{{ t_form.amount.label }}</label>
+                            {{ t_form.amount }}
                         </div>
-                        <div class="col-md-5">
-                            <label for="end_date" class="form-label">Fecha Hasta</label>
-                            <input type="date" class="form-control" id="end_date" name="end_date"
-                                value="{{ end_date_str }}">
-                        </div>
-                        <div class="col-md-2">
-                            <button type="submit" class="btn-primary w-100">Filtrar</button>
+                        <div class="col-md-6">
+                            <label for="{{ t_form.category.id_for_label }}" class="form-label">{{ t_form.category.label }}</label>
+                            {{ t_form.category }}
                         </div>
                     </div>
+
+                    <div class="mb-3">
+                        <label for="{{ t_form.description.id_for_label }}" class="form-label">{{ t_form.description.label }}</label>
+                        {{ t_form.description }}
+                    </div>
+
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-7">
+                            <label for="{{ t_form.date.id_for_label }}" class="form-label">{{ t_form.date.label }}</label>
+                            {{ t_form.date }}
+                        </div>
+                        <div class="col-md-5">
+                            <button type="submit" class="btn-primary w-100" name="submit_transaction">Agregar movimiento</button>
+                        </div>
+                    </div>
+
                 </form>
             </div>
         </div>
-        <div class="card">
-            <div class="card-header">
 
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
                 <h4>Ingresos y gastos de este mes</h4>
+                <select class="form-select" style="width: auto;">
+                    <option selected>Este mes</option>
+                    <option>Mes pasado</option>
+                    <option>Este año</option>
+                </select>
             </div>
             <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover">
-                        <thead>
-                            <tr>
-                                <th scope="col">Fecha</th>
-                                <th scope="col">Descripción</th>
-                                <th scope="col">Categoría</th>
-                                <th scope="col">Monto</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for t in transactions %}
-                            <tr>
-                                <td>{{ t.date|date:"d/m/Y" }}</td>
-                                <td><strong>{{ t.description }}</strong></td>
-                                <td>{% if t.category %}{{ t.category.name }}{% endif %}</td>
-                                <td class_="{{ t.type }}">
-                                    {% if t.type == 'gasto' %}-{% else %}+{% endif %}
-                                    ${{ t.amount }}
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="4" class="text-center">Aún no tenés transacciones.</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+                <ul class="list-group list-group-flush">
+                    {% for t in transactions %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center"
+                        style="background-color: transparent; padding-left: 0; padding-right: 0;">
+                        <div class="d-flex align-items-center">
+                            <span class="d-inline-block me-3" style="
+                                width: 40px; 
+                                height: 40px; 
+                                border-radius: 50%; 
+                                text-align: center; 
+                                line-height: 40px; 
+                                font-size: 1.2rem;
+                                color: {% if t.type == 'gasto' %}#E11D48{% else %}#16A34A{% endif %};
+                                background-color: {% if t.type == 'gasto' %}#FEE2E2{% else %}#D1FAE5{% endif %};
+                            ">
+                                {% if t.type == 'gasto' %}-{% else %}+{% endif %}
+                            </span>
+                            <div>
+                                <strong style="color: var(--text-main);">{{ t.description }}</strong>
+                                <small class="d-block text-muted">{% if t.category %}{{ t.category.name }}{% endif %} -
+                                    {{ t.date|date:"d/m/Y" }}</small>
+                            </div>
+                        </div>
+                        <span class="{% if t.type == 'gasto' %}gasto{% else %}ingreso{% endif %}">
+                            {% if t.type == 'gasto' %}-{% else %}+{% endif %}${{ t.amount|floatformat:2 }}
+                        </span>
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item text-center" style="background-color: transparent;">
+                        Aún no tenés transacciones.
+                    </li>
+                    {% endfor %}
+                </ul>
             </div>
         </div>
 
@@ -174,8 +192,8 @@
             plugins: {
                 legend: {
                     labels: {
-                        // NUEVO COLOR DE TEXTO
-                        color: '#1E1E1E'
+                        // NUEVO COLOR DE TEXTO (Ajustado a tu base.html)
+                        color: 'var(--text-main)'
                     }
                 }
             }
