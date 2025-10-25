@@ -1,13 +1,24 @@
 {% extends "base.html" %}
+{% load crispy_forms_tags %}
 
 {% block title %}Registro - Spendly{% endblock %}
 
 {% block content %}
-    <h2>Registrarse</h2>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Crear cuenta</button>
-    </form>
-    <p>¿Ya tenés cuenta? <a href="{% url 'login' %}">Iniciá Sesión</a></p>
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="card-title text-center mb-4">Registrarse</h2>
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    <button type="submit" class="btn btn-info w-100">Crear cuenta</button>
+                </form>
+                <p class="mt-3 text-center">
+                    ¿Ya tenés cuenta? <a href="{% url 'login' %}">Iniciá Sesión</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

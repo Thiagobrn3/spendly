@@ -10,6 +10,8 @@ class Category(models.Model):
         return self.name
 
 # Modelo para las Transacciones (Ingresos y Gastos)
+# ... (Modelo Category) ...
+
 class Transaction(models.Model):
     TYPE_CHOICES = (
         ('ingreso', 'Ingreso'),
@@ -22,6 +24,9 @@ class Transaction(models.Model):
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
     description = models.CharField(max_length=255)
     date = models.DateField()
+    
+    # Esto vincula la transacción a su 'fuente' recurrente, si la tiene
+    recurring_source = models.ForeignKey('RecurringTransaction', on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return f"{self.type} de {self.amount} - {self.user.username}"

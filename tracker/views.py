@@ -33,7 +33,8 @@ def index(request):
                 new_transaction = t_form.save(commit=False)
                 new_transaction.user = request.user
                 new_transaction.save()
-                return redirect('index')
+                # Redirigimos a la misma URL (conservando los filtros GET si existen)
+                return redirect(request.path_info + '?' + request.GET.urlencode())
 
         elif 'submit_category' in request.POST:
             c_form = CategoryForm(request.POST)
@@ -41,49 +42,71 @@ def index(request):
                 new_category = c_form.save(commit=False)
                 new_category.user = request.user
                 new_category.save()
-                return redirect('index')
+                return redirect(request.path_info + '?' + request.GET.urlencode())
 
     # --- LÓGICA GET (esta parte la actualizamos) ---
 
-    # Formularios vacíos
+    # 1. Determinar el rango de fechas
+    today = datetime.date.today()
+    # Valores predeterminados: el mes actual
+    default_start_date = today.replace(day=1)
+    default_end_date = today 
+
+    # 2. Leer las fechas del request.GET
+    # Si no existen, usamos los valores predeterminados
+    start_date_str = request.GET.get('start_date', default_start_date.strftime('%Y-%m-%d'))
+    end_date_str = request.GET.get('end_date', default_end_date.strftime('%Y-%m-%d'))
+
+    # 3. Convertir los strings de fecha a objetos 'date' para la base de datos
+    try:
+        start_date = datetime.datetime.strptime(start_date_str, '%Y-%m-%d').date()
+        end_date = datetime.datetime.strptime(end_date_str, '%Y-%m-%d').date()
+    except ValueError:
+        # Si el formato es inválido (ej. URL manipulada), volvemos a los defaults
+        start_date = default_start_date
+        end_date = default_end_date
+        start_date_str = default_start_date.strftime('%Y-%m-%d')
+        end_date_str = default_end_date.strftime('%Y-%m-%d')
+
+    # Instanciamos los formularios vacíos
     t_form = TransactionForm(user=request.user)
     c_form = CategoryForm()
 
-    # Listas para la página
-    transactions = Transaction.objects.filter(user=request.user).order_by('-date')
+    # Obtenemos las categorías del usuario (esto no cambia)
     categories = Category.objects.filter(user=request.user)
 
+    # --- ACTUALIZAMOS LAS CONSULTAS PARA USAR EL RANGO DE FECHAS ---
 
-    # --- NUEVA LÓGICA PARA EL GRÁFICO Y TOTALES ---
+    # 1. Lista de Transacciones (filtrada por el rango)
+    transactions = Transaction.objects.filter(
+        user=request.user,
+        date__gte=start_date, # >= Fecha Desde
+        date__lte=end_date      # <= Fecha Hasta
+    ).order_by('-date')
 
-    # 1. Obtenemos el primer día del mes actual
-    today = datetime.date.today()
-    first_day_of_month = today.replace(day=1)
-
-    # 2. Calculamos el total gastado este mes
-    # (Filtramos por usuario, tipo 'gasto', y desde el 1ro del mes)
-    total_spent_month = Transaction.objects.filter(
+    # 2. Total gastado (filtrado por el rango)
+    # (Renombramos la variable de 'total_spent_month' a 'total_spent')
+    total_spent = Transaction.objects.filter(
         user=request.user,
         type='gasto',
-        date__gte=first_day_of_month
-    ).aggregate(Sum('amount'))['amount__sum'] or 0.00 # 'or 0.00' por si es None
+        date__gte=start_date,
+        date__lte=end_date
+    ).aggregate(Sum('amount'))['amount__sum'] or 0.00
 
-    # 3. Preparamos los datos para el gráfico de torta
-    # (Agrupamos los gastos del mes por categoría y sumamos sus montos)
+    # 3. Datos del gráfico (filtrados por el rango)
     expense_data = Transaction.objects.filter(
         user=request.user,
         type='gasto',
-        date__gte=first_day_of_month
+        date__gte=start_date,
+        date__lte=end_date
     ).values('category__name').annotate(total=Sum('amount'))
 
-    # 4. Separamos los datos en 'etiquetas' y 'valores' para JS
+    # 4. Separamos los datos para JS (esto queda igual)
     chart_labels = []
     chart_data = []
     for item in expense_data:
-        # Si una transacción no tiene categoría, la llamamos 'Sin Categoría'
         label = item['category__name'] if item['category__name'] else 'Sin Categoría'
         chart_labels.append(label)
-        # Convertimos el Decimal de Django a float para que JS lo entienda
         chart_data.append(float(item['total']))
 
     # --------------------------------------------------
@@ -95,10 +118,15 @@ def index(request):
         'transactions': transactions,
         'categories': categories,
 
-        # Agregamos los nuevos datos del gráfico y el total
-        'total_spent_month': total_spent_month,
+        # Pasamos el nuevo total
+        'total_spent': total_spent,
         'chart_labels': chart_labels,
         'chart_data': chart_data,
+
+        # ¡Importante! Pasamos los strings de las fechas de vuelta
+        # para que el formulario "recuerde" lo que el usuario filtró.
+        'start_date_str': start_date_str,
+        'end_date_str': end_date_str,
     }
 
     return render(request, 'tracker/index.html', context)
