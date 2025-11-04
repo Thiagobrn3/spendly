@@ -80,6 +80,36 @@
                 </div>
             </div>
 
+            <div>
+                <h3 class="h4 fw-bold text-white mb-3">Tarjetas de Crédito</h3>
+                <div class="row row-cols-1 row-cols-md-3 g-4">
+                    
+                    {% for card in cards %}
+                    <div class="col">
+                        <div class="card h-100 bg-dark border-secondary-subtle shadow-sm rounded-4">
+                            <div class="card-body d-flex flex-column p-4">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="d-flex align-items-center justify-content-center rounded-circle me-3" style="width: 40px; height: 40px; background-color: rgba(var(--bs-primary-rgb), 0.2);">
+                                        <span class="material-symbols-outlined fs-5" style="color: var(--bs-primary);">
+                                            credit_card
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <h5 class="h6 fw-semibold text-white mb-0">{{ card.name }}</h5>
+                                        <small class="text-body-secondary">Monto a Pagar</small>
+                                    </div>
+                                </div>
+                                <h4 class="h3 fw-bold gasto mt-auto mb-0">${{ card.get_balance_due|floatformat:2 }}</h4>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-12">
+                        <p class="text-body-secondary">No tenés tarjetas. <a href="{% url 'manage_cards' %}">Agregá una</a>.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
             <div class="card bg-dark border-secondary-subtle shadow-sm rounded-4">
                 <div class="card-body p-4 p-lg-5">
                     
@@ -139,13 +169,14 @@
                         {% endfor %}
                     </ul>
                     <div class="text-center mt-3">
-                        <a href="#" class="btn btn-link text-primary fw-semibold">Ver todas las transacciones</a>
+                        <a href="{% url 'transaction_list' %}" class="btn btn-link text-primary fw-semibold">Ver todas las transacciones</a>
                     </div>
                 </div>
             </div>
 
         </div>
-    </div> <div class="col-lg-4">
+    </div>
+    <div class="col-lg-4">
         <div class="d-flex flex-column gap-4 gap-lg-5">
 
             <div class="card bg-dark border-secondary-subtle shadow-sm rounded-4">
@@ -189,7 +220,9 @@
             </div>
 
         </div>
-    </div> </div> <div class="modal fade" id="transactionModal" tabindex="-1" aria-labelledby="transactionModalLabel" aria-hidden="true">
+    </div>
+    </div>
+<div class="modal fade" id="transactionModal" tabindex="-1" aria-labelledby="transactionModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-secondary-subtle">
             <form method="post" action="{% url 'add_transaction' %}">
@@ -230,12 +263,10 @@
         </div>
     </div>
 </div>
-
-
 {{ chart_labels|json_script:"chart-labels" }}
 {{ chart_data|json_script:"chart-data" }}
 <script>
-    const ctx = document.getElementById('myPieChart').getContext('2d');
+    const ctx = document.getElementById('myPieChart').getContext('d');
     const chartLabels = JSON.parse(document.getElementById('chart-labels').textContent);
     const chartData = JSON.parse(document.getElementById('chart-data').textContent);
     
@@ -275,6 +306,7 @@
     // Generar leyenda HTML personalizada
     const legendContainer = document.getElementById('chart-legend');
     
+    // ===== CORRECCIÓN DE SINTAXIS AQUÍ =====
     const totalSpentForJS = parseFloat({{ total_spent|floatformat:2|default:"1" }});
 
     chartLabels.forEach((label, index) => {

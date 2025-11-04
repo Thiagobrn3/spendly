@@ -265,7 +265,8 @@ def transaction_delete(request, pk):
     
     transaction.delete()
     
-    return redirect('index')@login_required
+    return redirect('index')
+@login_required
 def manage_recurring(request):
     if request.method == 'POST':
         form = RecurringTransactionForm(request.POST, user=request.user)
