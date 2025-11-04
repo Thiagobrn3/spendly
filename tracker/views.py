@@ -3,51 +3,62 @@ from django.urls import reverse_lazy
 from django.views import generic
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.shortcuts import get_object_or_404 # Para eliminar
-# Importamos los nuevos modelos y formularios
-from .models import Transaction, Category, RecurringTransaction, CreditCard
-from .forms import TransactionForm, CategoryForm, RecurringTransactionForm, CreditCardForm
+from .models import Transaction, Category, RecurringTransaction, CreditCard, Account, Budget
+from .forms import TransactionForm, CategoryForm, RecurringTransactionForm, CreditCardForm, AccountForm, BudgetForm
 
 # Importamos los modelos y los nuevos formularios
 from .models import Transaction, Category
 from .forms import TransactionForm, CategoryForm
 from django.db.models import Sum # Para sumar en la base de datos
 import datetime # Para saber el mes actual
+from decimal import Decimal
+# Para manejar errores (ej. si crea un presupuesto duplicado)
+from django.db import IntegrityError
+from django.contrib import messages
 
-# Vista Basada en Clase para el Registro (esta queda igual)
+
+# Vista Basada en Clase para el Registro
 class SignUpView(generic.CreateView):
     form_class = UserCreationForm
     success_url = reverse_lazy('login')
     template_name = 'registration/signup.html'
 
 
-# --- Nuestra Vista de Dashboard (Index) ---
+# --- Vista de Dashboard (Index) - SÓLO GET ---
 @login_required
 def index(request):
 
-    # --- LÓGICA POST ---
-    if request.method == 'POST':
-        if 'submit_transaction' in request.POST:
-            t_form = TransactionForm(request.POST, user=request.user)
-            if t_form.is_valid():
-                new_transaction = t_form.save(commit=False)
-                new_transaction.user = request.user
-                new_transaction.save()
-                return redirect('index') 
-
-        elif 'submit_category' in request.POST:
-            c_form = CategoryForm(request.POST)
-            if c_form.is_valid():
-                new_category = c_form.save(commit=False)
-                new_category.user = request.user
-                new_category.save()
-                return redirect('index')
-
-    # --- LÓGICA GET
-
-    # Obtenemos el mes actual
+    # --- LÓGICA DE FILTRO DE FECHAS ---
+    periodo = request.GET.get('periodo', 'este_mes')
     today = datetime.date.today()
-    first_day_of_month = today.replace(day=1)
+    
+    if periodo == 'mes_pasado':
+        first_day_current_month = today.replace(day=1)
+        last_day_last_month = first_day_current_month - datetime.timedelta(days=1)
+        start_date = last_day_last_month.replace(day=1)
+        end_date = last_day_last_month
+        
+        date_filter_query = {
+            'date__gte': start_date,
+            'date__lte': end_date
+        }
+        
+    elif periodo == 'este_ano':
+        start_date = today.replace(month=1, day=1)
+        date_filter_query = {
+            'date__gte': start_date
+        }
+    
+    else: 
+        periodo = 'este_mes'
+        start_date = today.replace(day=1)
+        date_filter_query = {
+            'date__gte': start_date
+        }
+
+    # --- LÓGICA GET ---
 
     # Instanciamos los formularios vacíos
     t_form = TransactionForm(user=request.user)
@@ -59,33 +70,69 @@ def index(request):
     # Obtenemos las tarjetas del usuario
     cards = CreditCard.objects.filter(user=request.user)
 
-    # Lista de Transacciones de este mes
+    # --- ¡ESTA ES LA LÍNEA QUE FALTABA! ---
+    # Obtenemos las cuentas del usuario
+    accounts = Account.objects.filter(user=request.user)
+
+    # Lista de Transacciones (con filtro aplicado)
     transactions = Transaction.objects.filter(
         user=request.user,
-        date__gte=first_day_of_month 
+        **date_filter_query 
     ).order_by('-date')
 
-    # Total gastado este mes
+    # Total gastado (con filtro aplicado)
     total_spent = Transaction.objects.filter(
         user=request.user,
         type='gasto',
-        date__gte=first_day_of_month
+        **date_filter_query
     ).aggregate(Sum('amount'))['amount__sum'] or 0.00
 
-    # Datos del gráfico de este mes
+    # Datos del gráfico (con filtro aplicado)
     expense_data = Transaction.objects.filter(
         user=request.user,
         type='gasto',
-        date__gte=first_day_of_month
+        **date_filter_query
     ).values('category__name').annotate(total=Sum('amount'))
 
-    # Separamos los datos para JS
     chart_labels = []
     chart_data = []
     for item in expense_data:
         label = item['category__name'] if item['category__name'] else 'Sin Categoría'
         chart_labels.append(label)
         chart_data.append(float(item['total']))
+        
+    # --- LÓGICA DE PRESUPUESTOS ---
+    
+    # 1. Obtenemos los presupuestos del usuario
+    budgets = Budget.objects.filter(user=request.user).select_related('category')
+    budgets_progress = []
+
+    # 2. Convertimos los datos de gastos (que ya calculamos para el gráfico)
+    #    en un diccionario para buscar rápido, ej: {'Comida': 15000.00}
+    gastos_por_categoria = {
+        item['category__name']: item['total'] 
+        for item in expense_data 
+        if item['category__name'] # Ignoramos 'Sin Categoría'
+    }
+
+    # 3. Calculamos el progreso para cada presupuesto
+    for budget in budgets:
+        # Buscamos cuánto se gastó en esa categoría (0 si no se gastó nada)
+        spent = gastos_por_categoria.get(budget.category.name, Decimal('0.00'))
+        
+        # Calculamos el porcentaje
+        percentage = 0
+        if budget.amount > 0:
+            percentage = (spent / budget.amount) * 100
+        
+        budgets_progress.append({
+            'category_name': budget.category.name,
+            'limit': budget.amount,
+            'spent': spent,
+            # 'min' es para que la barra no se pase de 100%
+            'percentage': min(percentage, 100), 
+            'over_limit': spent > budget.amount, # Para marcar en rojo
+        })
 
     # Preparamos el 'contexto' para enviar al template
     context = {
@@ -93,13 +140,131 @@ def index(request):
         'c_form': c_form,
         'transactions': transactions,
         'categories': categories,
-        'cards': cards, # <-- NUEVO
+        'cards': cards,
+        'accounts': accounts, 
         'total_spent': total_spent,
         'chart_labels': chart_labels,
         'chart_data': chart_data,
+        'selected_periodo': periodo,
+        'budgets_progress': budgets_progress, 
     }
 
     return render(request, 'tracker/index.html', context)
+
+# --- Agregar Transacción ---
+@login_required
+@require_POST 
+def add_transaction(request):
+    t_form = TransactionForm(request.POST, user=request.user)
+    if t_form.is_valid():
+        new_transaction = t_form.save(commit=False)
+        new_transaction.user = request.user
+        
+        # --- LÓGICA DE SALDO ---
+        cuenta = new_transaction.cuenta
+        amount = new_transaction.amount
+
+        if new_transaction.type == 'ingreso':
+            cuenta.balance += amount
+        elif new_transaction.type == 'gasto':
+            cuenta.balance -= amount
+            
+        cuenta.save() # Guardamos el nuevo saldo en la cuenta
+        new_transaction.save() # Guardamos la transacción
+    
+    return redirect('index')
+
+# --- Agregar Categoría ---
+@login_required
+@require_POST # Esta vista solo acepta peticiones POST
+def add_category(request):
+    c_form = CategoryForm(request.POST)
+    if c_form.is_valid():
+        new_category = c_form.save(commit=False)
+        new_category.user = request.user
+        new_category.save()
+    return redirect('index')
+
+# --- ELiminar categoria ---
+@login_required
+@require_POST
+def category_delete(request, pk):
+    # Obtenemos la categoría, asegurándonos de que pertenece al usuario
+    category = get_object_or_404(Category, pk=pk, user=request.user)
+    
+    # La eliminamos
+    category.delete()
+    
+    # Redirigimos al dashboard
+    return redirect('index')
+
+# --- Editar Transacción ---
+@login_required
+def transaction_update(request, pk):
+    transaction = get_object_or_404(Transaction, pk=pk, user=request.user)
+    
+    # Guardamos los valores ANTES de la edición
+    old_amount = transaction.amount
+    old_type = transaction.type
+    old_cuenta = transaction.cuenta
+    
+    if request.method == 'POST':
+        form = TransactionForm(request.POST, instance=transaction, user=request.user)
+        if form.is_valid():
+            
+            # --- ¡NUEVA LÓGICA DE SALDO! ---
+            
+            # 1. Revertimos el valor antiguo de la cuenta antigua
+            if old_type == 'ingreso':
+                old_cuenta.balance -= old_amount
+            elif old_type == 'gasto':
+                old_cuenta.balance += old_amount
+            old_cuenta.save()
+
+            # 2. Aplicamos el valor nuevo a la cuenta nueva (puede ser la misma)
+            new_transaction = form.save(commit=False) # ¡Aún no guardamos!
+            new_cuenta = new_transaction.cuenta
+            new_amount = new_transaction.amount
+            
+            if new_transaction.type == 'ingreso':
+                new_cuenta.balance += new_amount
+            elif new_transaction.type == 'gasto':
+                new_cuenta.balance -= new_amount
+                
+            new_cuenta.save()
+            new_transaction.save() # Ahora sí guardamos la transacción actualizada
+            
+            # (Si la cuenta antigua y la nueva son diferentes, ambas se actualizan)
+            # (Si son la misma, se actualiza 2 veces, pero el resultado es correcto)
+
+            return redirect('index') 
+    else:
+        form = TransactionForm(instance=transaction, user=request.user)
+        
+    context = {
+        'form': form,
+        'transaction': transaction
+    }
+    return render(request, 'tracker/transaction_form.html', context)
+
+# --- Eliminar Transacción ---
+@login_required
+@require_POST 
+def transaction_delete(request, pk):
+    transaction = get_object_or_404(Transaction, pk=pk, user=request.user)
+    # Revertimos el efecto en el saldo de la cuenta
+    cuenta = transaction.cuenta
+    amount = transaction.amount
+
+    if transaction.type == 'ingreso':
+        cuenta.balance -= amount # Revertimos el ingreso
+    elif transaction.type == 'gasto':
+        cuenta.balance += amount # Revertimos el gasto
+        
+    cuenta.save() # Guardamos el saldo actualizado
+    transaction.delete() # Borramos la transacción
+    
+    return redirect('index')
 
 @login_required
 def manage_recurring(request):
@@ -131,14 +296,15 @@ def delete_recurring(request, pk):
 @login_required
 def manage_cards(request):
     if request.method == 'POST':
+        # Instanciamos el form con los datos del POST
         form = CreditCardForm(request.POST)
         if form.is_valid():
             card = form.save(commit=False)
-            card.user = request.user
+            card.user = request.user # Asignamos el usuario
             card.save()
             return redirect('manage_cards')
 
-    form = CreditCardForm()
+    form = CreditCardForm() # Instancia vacía para GET
     items = CreditCard.objects.filter(user=request.user)
     context = {
         'form': form,
@@ -152,3 +318,72 @@ def delete_card(request, pk):
     if request.method == 'POST':
         item.delete()
     return redirect('manage_cards')
+
+# --- VISTA PARA CUENTAS ---
+@login_required
+def manage_accounts(request):
+    if request.method == 'POST':
+        form = AccountForm(request.POST)
+        if form.is_valid():
+            account = form.save(commit=False)
+            account.user = request.user
+            account.save()
+            return redirect('manage_accounts')
+
+    form = AccountForm()
+    accounts = Account.objects.filter(user=request.user)
+    context = {
+        'form': form,
+        'accounts': accounts,
+    }
+    return render(request, 'tracker/manage_accounts.html', context)
+
+@login_required
+def delete_account(request, pk):
+    account = get_object_or_404(Account, pk=pk, user=request.user)
+    
+    # Verificamos si la cuenta tiene transacciones
+    if account.transaction_set.exists():
+        # (Aquí podríamos redirigir con un mensaje de error)
+        # Por ahora, simplemente no la borramos si tiene transacciones
+        pass
+    else:
+        if request.method == 'POST':
+            account.delete()
+            
+    return redirect('manage_accounts')
+
+@login_required
+def manage_budgets(request):
+    if request.method == 'POST':
+        # Pasamos el 'user' al formulario para que filtre las categorías
+        form = BudgetForm(request.POST, user=request.user)
+        if form.is_valid():
+            try:
+                budget = form.save(commit=False)
+                budget.user = request.user
+                budget.save()
+                return redirect('manage_budgets')
+            except IntegrityError:
+                # Esto se activa si el usuario crea un presupuesto para una categoría
+                # que ya tiene uno (gracias al 'unique_together' en el modelo)
+                messages.error(request, 'Error: Ya existe un presupuesto para esa categoría.')
+        else:
+            messages.error(request, 'Por favor, corrija los errores en el formulario.')
+
+    # Lógica para GET (mostrar la página)
+    form = BudgetForm(user=request.user)
+    budgets = Budget.objects.filter(user=request.user).select_related('category')
+    
+    context = {
+        'form': form,
+        'budgets': budgets,
+    }
+    return render(request, 'tracker/manage_budgets.html', context)
+
+@login_required
+@require_POST # Solo permitimos borrar vía POST
+def delete_budget(request, pk):
+    budget = get_object_or_404(Budget, pk=pk, user=request.user)
+    budget.delete()
+    return redirect('manage_budgets')

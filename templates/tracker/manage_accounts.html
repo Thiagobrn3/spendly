@@ -1,19 +1,19 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
 
-{% block title %}Ingresos/Gastos Fijos - Spendly{% endblock %}
+{% block title %}Administrar Cuentas - Spendly{% endblock %}
 
 {% block content %}
-    <h1 class="mb-4">Administrar Ingresos/Gastos Fijos</h1>
+    <h1 class="mb-4">Administrar Cuentas</h1>
     <p class="text-body-secondary mb-4">
-        Registrá aquí tus gastos o ingresos que se repiten (ej. Alquiler, Sueldo, Netflix).
+        Creá tus cuentas (bancarias, efectivo, etc.) y asignales un saldo inicial.
     </p>
 
     <div class="row g-4">
         <div class="col-lg-5">
             <div class="card">
                 <div class="card-header">
-                    <h4>Agregar Nuevo</h4>
+                    <h4>Agregar Cuenta</h4>
                 </div>
                 <div class="card-body">
                     <form method="post">
@@ -28,31 +28,28 @@
         <div class="col-lg-7">
             <div class="card">
                 <div class="card-header">
-                    <h4>Mis Fijos</h4>
+                    <h4>Mis Cuentas</h4>
                 </div>
                 <div class="card-body">
                     <ul class="list-group list-group-flush">
-                        {% for item in items %}
+                        {% for account in accounts %}
                         <li class="list-group-item d-flex justify-content-between align-items-center" style="background-color: transparent;">
                             <span>
-                                <strong>{{ item.description }}</strong> ({{ item.get_frequency_display }})
-                                <span class="{{ item.type }}">${{ item.amount }}</span>
-                                {% if item.category %}({{ item.category.name }}){% endif %}
+                                <strong>{{ account.name }}</strong> 
+                                - Saldo: <span style="font-weight: bold; color: var(--text-main);">${{ account.balance|floatformat:2 }}</span>
                             </span>
                             
-                            <form action="{% url 'delete_recurring' item.pk %}" method="post" onsubmit="return confirm('¿Estás seguro de que querés eliminar \'{{ item.description }}\'?');">
+                            <form action="{% url 'delete_account' account.pk %}" method="post" onsubmit="return confirm('¿Estás seguro de que querés eliminar \'{{ account.name }}\'?\nSolo podrás hacerlo si no tiene transacciones.');">
                                 {% csrf_token %}
                                 <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
                             </form>
                         </li>
                         {% empty %}
-                        <li class="list-group-item" style="background-color: transparent;">No tenés items recurrentes.</li>
-                        
+                        <li class="list-group-item" style="background-color: transparent;">No tenés cuentas registradas.</li>
                         {% endfor %}
                     </ul>
                 </div>
             </div>
         </div>
     </div>
-
 {% endblock %}

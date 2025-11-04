@@ -209,3 +209,5 @@ __marimo__/
 #Admin
 admin.txt
 admin-*.txt
+
+/staticfiles

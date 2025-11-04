@@ -3,61 +3,76 @@
 
 {% block content %}
 <h1>¡Hola, {{ user.username }}!</h1>
+
 <div class="row g-4">
 
-    <div class="col-lg-7">
-
+    <div class="col-lg-5">
         <div class="card mb-4">
             <div class="card-header">
                 <h4>Agregar movimiento</h4>
             </div>
             <div class="card-body">
-                <form method="post">
+                <form method="post" action="{% url 'add_transaction' %}">
                     {% csrf_token %}
-                    
-                    <div class="mb-3">
-                        <label for="{{ t_form.type.id_for_label }}" class="form-label">{{ t_form.type.label }}</label>
-                        {{ t_form.type }}
-                    </div>
-
-                    <div class="row g-3 mb-3">
+                    {{ t_form|crispy }}
+                    <div class="row">
                         <div class="col-md-6">
-                            <label for="{{ t_form.amount.id_for_label }}" class="form-label">{{ t_form.amount.label }}</label>
-                            {{ t_form.amount }}
-                        </div>
+                            </div>
                         <div class="col-md-6">
-                            <label for="{{ t_form.category.id_for_label }}" class="form-label">{{ t_form.category.label }}</label>
-                            {{ t_form.category }}
+                             <button type="submit" class="btn-primary w-100" name="submit_transaction">Agregar</button>
                         </div>
                     </div>
-
-                    <div class="mb-3">
-                        <label for="{{ t_form.description.id_for_label }}" class="form-label">{{ t_form.description.label }}</label>
-                        {{ t_form.description }}
-                    </div>
-
-                    <div class="row g-3 align-items-end">
-                        <div class="col-md-7">
-                            <label for="{{ t_form.date.id_for_label }}" class="form-label">{{ t_form.date.label }}</label>
-                            {{ t_form.date }}
-                        </div>
-                        <div class="col-md-5">
-                            <button type="submit" class="btn-primary w-100" name="submit_transaction">Agregar movimiento</button>
-                        </div>
-                    </div>
-
                 </form>
             </div>
         </div>
-
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4>Agregar Categoría</h4>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'add_category' %}">
+                    {% csrf_token %}
+                    {{ c_form|crispy }}
+                    <button type="submit" class="btn btn-outline-primary" name="submit_category">Crear</button>
+                </form>
+                <hr>
+                <ul class="list-group list-group-flush">
+                    {% for c in categories %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center" style="background-color: transparent; padding-left: 0; padding-right: 0;">
+                        <span>{{ c.name }}</span>
+                        <form action="{% url 'category_delete' c.pk %}" method="post" onsubmit="return confirm('¿Estás seguro de que querés eliminar la categoría {{ c.name }}?\nLas transacciones existentes se marcarán como Sin Categoría.');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                        </form>
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item" style="background-color: transparent;">No tenés categorías.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div> <div class="col-lg-7">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h4>Ingresos y gastos de este mes</h4>
-                <select class="form-select" style="width: auto;">
-                    <option selected>Este mes</option>
-                    <option>Mes pasado</option>
-                    <option>Este año</option>
-                </select>
+                <h4>
+                    Ingresos y gastos 
+                    <span class="text-body-secondary fs-6">({{ selected_periodo|title }})</span>
+                </h4>
+                
+                <form method="GET" action="{% url 'index' %}">
+                    <select class="form-select" name="periodo" style="width: auto;" onchange="this.form.submit();">
+                        <option value="este_mes" {% if selected_periodo == 'este_mes' %}selected{% endif %}>
+                            Este mes
+                        </option>
+                        <option value="mes_pasado" {% if selected_periodo == 'mes_pasado' %}selected{% endif %}>
+                            Mes pasado
+                        </option>
+                        <option value="este_ano" {% if selected_periodo == 'este_ano' %}selected{% endif %}>
+                            Este año
+                        </option>
+                    </select>
+                </form>
             </div>
             <div class="card-body">
                 <ul class="list-group list-group-flush">
@@ -66,12 +81,8 @@
                         style="background-color: transparent; padding-left: 0; padding-right: 0;">
                         <div class="d-flex align-items-center">
                             <span class="d-inline-block me-3" style="
-                                width: 40px; 
-                                height: 40px; 
-                                border-radius: 50%; 
-                                text-align: center; 
-                                line-height: 40px; 
-                                font-size: 1.2rem;
+                                width: 40px; height: 40px; border-radius: 50%; text-align: center; 
+                                line-height: 40px; font-size: 1.2rem;
                                 color: {% if t.type == 'gasto' %}#E11D48{% else %}#16A34A{% endif %};
                                 background-color: {% if t.type == 'gasto' %}#FEE2E2{% else %}#D1FAE5{% endif %};
                             ">
@@ -83,9 +94,16 @@
                                     {{ t.date|date:"d/m/Y" }}</small>
                             </div>
                         </div>
-                        <span class="{% if t.type == 'gasto' %}gasto{% else %}ingreso{% endif %}">
-                            {% if t.type == 'gasto' %}-{% else %}+{% endif %}${{ t.amount|floatformat:2 }}
-                        </span>
+                        <div class="d-flex align-items-center">
+                            <span class="{% if t.type == 'gasto' %}gasto{% else %}ingreso{% endif %} me-3" style="min-width: 80px; text-align: right;">
+                                {% if t.type == 'gasto' %}-{% else %}+{% endif %}${{ t.amount|floatformat:2 }}
+                            </span>
+                            <a href="{% url 'transaction_update' t.pk %}" class="btn btn-sm btn-outline-secondary me-1">Editar</a>
+                            <form action="{% url 'transaction_delete' t.pk %}" method="post" onsubmit="return confirm('¿Estás seguro de que querés eliminar esta transacción?');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                            </form>
+                        </div>
                     </li>
                     {% empty %}
                     <li class="list-group-item text-center" style="background-color: transparent;">
@@ -95,33 +113,62 @@
                 </ul>
             </div>
         </div>
+    </div> </div> <div class="row g-4 mt-1">
 
-    </div>
-
-    <div class="col-lg-5">
-
+    <div class="col-lg-4">
         <div class="card mb-4">
-            <div class="card-header">
-                <h4>Agregar Categoría</h4>
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4>Mis Cuentas</h4>
+                <a href="{% url 'manage_accounts' %}" class="btn btn-sm btn-outline-primary">Administrar</a>
             </div>
             <div class="card-body">
-                <form method="post">
-                    {% csrf_token %}
-                    {{ c_form|crispy }}
-                    <button type="submit" class="btn btn-outline-primary" name="submit_category">Crear
-                        Categoría</button>
-                </form>
-                <hr>
                 <ul class="list-group list-group-flush">
-                    {% for c in categories %}
-                    <li class="list-group-item" style="background-color: transparent;">{{ c.name }}</li>
+                    {% for account in accounts %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center"
+                        style="background-color: transparent; padding-left: 0; padding-right: 0;">
+                        <strong style="color: var(--text-main);">{{ account.name }}</strong>
+                        <span style="font-weight: 600; color: var(--text-main);">${{ account.balance|floatformat:2 }}</span>
+                    </li>
                     {% empty %}
-                    <li class="list-group-item" style="background-color: transparent;">No tenés categorías.</li>
+                    <li class="list-group-item" style="background-color: transparent;">
+                        No tenés cuentas. <a href="{% url 'manage_accounts' %}">Agregá una</a>.
+                    </li>
                     {% endfor %}
                 </ul>
             </div>
         </div>
-
+    </div> <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4>Presupuestos ({{ selected_periodo|title }})</h4>
+                <a href="{% url 'manage_budgets' %}" class="btn btn-sm btn-outline-primary">Administrar</a>
+            </div>
+            <div class="card-body">
+                {% for budget in budgets_progress %}
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <strong>{{ budget.category_name }}</strong>
+                            <span>
+                                <span class="{% if budget.over_limit %}gasto{% else %}text-body-secondary{% endif %}">
+                                    ${{ budget.spent|floatformat:2 }}
+                                </span>
+                                / ${{ budget.limit|floatformat:2 }}
+                            </span>
+                        </div>
+                        <div class="progress" role="progressbar" aria-valuenow="{{ budget.percentage|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100">
+                            <div class="progress-bar {% if budget.over_limit %}bg-danger{% else %}{% endif %}" 
+                                 style="width: {{ budget.percentage|floatformat:0 }}%">
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="text-center text-body-secondary">
+                        <small>No tenés presupuestos definidos. <a href="{% url 'manage_budgets' %}">Agregá uno</a>.</small>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div> <div class="col-lg-4">
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h4>Mis Tarjetas</h4>
@@ -136,23 +183,24 @@
                             <strong style="color: var(--text-main);">{{ card.name }}</strong>
                             <small class="d-block text-muted">Vence el día {{ card.due_date }}</small>
                         </div>
-                        <span class="gasto">${{ card.balance_due|floatformat:2 }}</span>
+                        <span class="gasto">${{ card.get_balance_due|floatformat:2 }}</span>
                     </li>
                     {% empty %}
                     <li class="list-group-item" style="background-color: transparent;">
-                        No tenés tarjetas registradas. <a href="{% url 'manage_cards' %}">Agregá una</a>.
+                        No tenés tarjetas. <a href="{% url 'manage_cards' %}">Agregá una</a>.
                     </li>
                     {% endfor %}
                 </ul>
             </div>
         </div>
-
+    </div> </div> <div class="row g-4">
+    <div class="col-lg-4">
         <div class="card mb-4">
             <div class="card-header">
-                <h4>Gastos</h4>
+                <h4>Gastos ({{ selected_periodo|title }})</h4>
             </div>
             <div class="card-body">
-                <h5 class="text-center">Total Gastado (este mes):
+                <h5 class="text-center">Total:
                     <span class="gasto">${{ total_spent|floatformat:2 }}</span>
                 </h5>
                 <div style="width: 100%;">
@@ -160,9 +208,7 @@
                 </div>
             </div>
         </div>
-
-    </div>
-</div> {{ chart_labels|json_script:"chart-labels" }}
+    </div> </div> {{ chart_labels|json_script:"chart-labels" }}
 {{ chart_data|json_script:"chart-data" }}
 <script>
     const ctx = document.getElementById('myPieChart').getContext('2d');
@@ -175,14 +221,8 @@
             datasets: [{
                 label: 'Gastos del mes',
                 data: chartData,
-                // PALLETA DE COLORES
                 backgroundColor: [
-                    '#8A7CFF', // Violeta (Alquiler)
-                    '#4ED9C1', // Verde menta (Restaurante)
-                    '#81D4FA', // Celeste pastel (Transporte)
-                    '#5C6BC0', // Azul suave (Otros)
-                    '#FFA726', // Naranja
-                    '#FF7043', // Coral
+                    '#8A7CFF', '#4ED9C1', '#81D4FA', '#5C6BC0', '#FFA726', '#FF7043',
                 ],
             }]
         },
@@ -192,7 +232,6 @@
             plugins: {
                 legend: {
                     labels: {
-                        // NUEVO COLOR DE TEXTO (Ajustado a tu base.html)
                         color: 'var(--text-main)'
                     }
                 }
