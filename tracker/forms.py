@@ -2,7 +2,7 @@ from django import forms
 from .models import Transaction, Category
 from .models import RecurringTransaction, CreditCard
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Row, Column, Submit
+from crispy_forms.layout import Layout, Row, Column, Submit, Field
 from .models import Transaction, Category, RecurringTransaction, CreditCard, Account, Budget
 
 # Formulario para crear nuevas Categorías
@@ -18,7 +18,6 @@ class CategoryForm(forms.ModelForm):
 class TransactionForm(forms.ModelForm):
     class Meta:
         model = Transaction
-        # ¡'cuenta' ya no está en exclude!
         exclude = ['user', 'recurring_source'] 
         
         labels = {
@@ -28,13 +27,18 @@ class TransactionForm(forms.ModelForm):
             'description': 'Descripción',
             'date': 'Fecha',
             'tarjeta_usada': 'Usando Tarjeta (Opcional)',
-            'cuenta': 'Cuenta', # Nueva etiqueta
+            'cuenta': 'Cuenta', 
         }
-        
         widgets = {
+            'type': forms.Select(attrs={'class': 'form-select'}),
+            'cuenta': forms.Select(attrs={'class': 'form-select'}),
+            'amount': forms.NumberInput(attrs={'class': 'form-control'}),
+            'category': forms.Select(attrs={'class': 'form-select'}),
+            'description': forms.TextInput(attrs={'class': 'form-control'}),
             'date': forms.DateInput(
                 attrs={'type': 'date', 'class': 'form-control'}
             ), 
+            'tarjeta_usada': forms.Select(attrs={'class': 'form-select'}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -52,6 +56,22 @@ class TransactionForm(forms.ModelForm):
         # Hacemos el campo 'cuenta' visible y lo ponemos al lado de 'type'
         self.helper = FormHelper()
         self.helper.form_method = 'post'
+        self.helper.layout = Layout(
+            Row( 
+                Column(Field('type', css_class='form-select'), css_class='col-md-6'),
+                Column(Field('cuenta', css_class='form-select'), css_class='col-md-6'),
+            ), 
+            Row(
+                Column(Field('amount', css_class='form-control'), css_class='col-md-6'),
+                Column(Field('category', css_class='form-select'), css_class='col-md-6'),
+            ),
+            Field('description', css_class='form-control'), 
+            Row(
+                # Al usar Field, también podemos forzar el type='date' aquí
+                Column(Field('date', css_class='form-control', type='date'), css_class='col-md-6'),
+                Column(Field('tarjeta_usada', css_class='form-select'), css_class='col-md-6'),
+            ),
+        )
         
         self.helper.layout = Layout(
             Row( # Nueva fila
