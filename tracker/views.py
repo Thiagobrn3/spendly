@@ -148,17 +148,16 @@ def add_transaction(request):
         new_transaction = t_form.save(commit=False)
         new_transaction.user = request.user
         
-        # --- LÓGICA DE SALDO ---
         cuenta = new_transaction.cuenta
         amount = new_transaction.amount
 
         if new_transaction.type == 'ingreso':
-            cuenta.balance += amount
+            cuenta.balance = F('balance') + amount
         elif new_transaction.type == 'gasto':
-            cuenta.balance -= amount
+            cuenta.balance = F('balance') - amount
             
-        cuenta.save() # Guardamos el nuevo saldo en la cuenta
-        new_transaction.save() # Guardamos la transacción
+        cuenta.save()
+        new_transaction.save()
     
     return redirect('index')
 
@@ -191,7 +190,6 @@ def category_delete(request, pk):
 def transaction_update(request, pk):
     transaction = get_object_or_404(Transaction, pk=pk, user=request.user)
     
-    # Guardamos los valores ANTES de la edición
     old_amount = transaction.amount
     old_type = transaction.type
     old_cuenta = transaction.cuenta
@@ -200,30 +198,25 @@ def transaction_update(request, pk):
         form = TransactionForm(request.POST, instance=transaction, user=request.user)
         if form.is_valid():
             
-            # --- ¡NUEVA LÓGICA DE SALDO! ---
-            
-            # 1. Revertimos el valor antiguo de la cuenta antigua
+            # 1. Revertimos el valor antiguo
             if old_type == 'ingreso':
-                old_cuenta.balance -= old_amount
+                old_cuenta.balance = F('balance') - old_amount
             elif old_type == 'gasto':
-                old_cuenta.balance += old_amount
+                old_cuenta.balance = F('balance') + old_amount
             old_cuenta.save()
 
-            # 2. Aplicamos el valor nuevo a la cuenta nueva (puede ser la misma)
-            new_transaction = form.save(commit=False) # ¡Aún no guardamos!
+            # 2. Aplicamos el valor nuevo
+            new_transaction = form.save(commit=False)
             new_cuenta = new_transaction.cuenta
             new_amount = new_transaction.amount
             
             if new_transaction.type == 'ingreso':
-                new_cuenta.balance += new_amount
+                new_cuenta.balance = F('balance') + new_amount
             elif new_transaction.type == 'gasto':
-                new_cuenta.balance -= new_amount
+                new_cuenta.balance = F('balance') - new_amount
                 
             new_cuenta.save()
-            new_transaction.save() # Ahora sí guardamos la transacción actualizada
-            
-            # (Si la cuenta antigua y la nueva son diferentes, ambas se actualizan)
-            # (Si son la misma, se actualiza 2 veces, pero el resultado es correcto)
+            new_transaction.save() 
 
             return redirect('index') 
     else:
@@ -240,20 +233,19 @@ def transaction_update(request, pk):
 @require_POST 
 def transaction_delete(request, pk):
     transaction = get_object_or_404(Transaction, pk=pk, user=request.user)
-    # Revertimos el efecto en el saldo de la cuenta
+    
     cuenta = transaction.cuenta
     amount = transaction.amount
 
     if transaction.type == 'ingreso':
-        cuenta.balance -= amount # Revertimos el ingreso
+        cuenta.balance = F('balance') - amount
     elif transaction.type == 'gasto':
-        cuenta.balance += amount # Revertimos el gasto
+        cuenta.balance = F('balance') + amount
         
-    cuenta.save() # Guardamos el saldo actualizado
-    transaction.delete() # Borramos la transacción
+    cuenta.save()
+    transaction.delete()
     
     return redirect('index')
-
 @login_required
 def manage_recurring(request):
     if request.method == 'POST':
