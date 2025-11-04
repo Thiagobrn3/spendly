@@ -34,27 +34,27 @@
             /* 3. Colores de Componentes */
             --bs-card-bg: #1f2937;
             --bs-dark-bg-subtle: #1f2937; /* Fondo de Modal */
-
-            --bs-body-bg-tertiary: #111827 !important; /* Fondo del Input */
-            --bs-tertiary-bg: #111827 !important; /* Fondo del Input (alternativa) */
-            --bs-form-bg: #111827 !important; /* Fondo del Input (otra alternativa) */
             
+            /* 4. Sobrescritura de variables de Formulario */
+            --bs-body-bg-tertiary: #111827 !important; 
+            --bs-tertiary-bg: #111827 !important;
+            --bs-form-bg: #111827 !important;
             --bs-border-color: #374151 !important;
-            --bs-body-color: #f9fafb !important; /* Color de texto general */
-            --bs-form-color: #f9fafb !important; /* Color de texto de form */
+            --bs-body-color: #f9fafb !important;
+            --bs-form-color: #f9fafb !important;
         }
 
-        /* 4. Fuente de la referencia */
+        /* 5. Fuente de la referencia */
         body, .btn, .navbar-brand, .nav-link, h1, h2, h3, h4, h5 {
             font-family: 'Inter', sans-serif;
         }
 
-        /* 5. Estilos de Navbar (como antes) */
+        /* 6. Estilos de Navbar */
         .navbar-nav .nav-link { font-weight: 500; color: var(--bs-gray-400); }
         .navbar-nav .nav-link.active,
         .navbar-nav .nav-link:hover { color: var(--bs-primary); }
         
-        /* 6. Estilo de Botón Primario (como antes) */
+        /* 7. Estilo de Botón Primario */
         .btn-primary {
             --bs-btn-bg: var(--bs-primary);
             --bs-btn-border-color: var(--bs-primary);
@@ -64,17 +64,21 @@
             --bs-btn-font-weight: 700;
         }
         
-        /* 7. Estilo de "gasto" e "ingreso" (como antes) */
+        /* 8. Estilo de "gasto" e "ingreso" */
         .gasto { color: #EF4444; font-weight: 600; }
         .ingreso { color: #22C55E; font-weight: 600; }
 
-        /* 8. Iconos Material (como antes) */
+        /* 9. Iconos Material */
         .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24
+          font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24
         }
-
         
-        /* 9. Forzamos el estilo de inputs y selects por si las variables fallan */
+        /* ==============================================
+           ¡REGLAS DE FORMULARIO (NIVEL DIOS)!
+           ==============================================
+        */
+        
+        /* 10. Atacamos las clases de Bootstrap */
         [data-bs-theme="dark"] .form-control,
         [data-bs-theme="dark"] .form-select {
             background-color: var(--bs-body-bg) !important;
@@ -82,14 +86,36 @@
             color: var(--bs-body-color) !important;
         }
 
-        /* 10. Color del 'placeholder' */
+        /* 11. Atacamos las clases específicas de Crispy-Forms */
+        [data-bs-theme="dark"] .textinput,
+        [data-bs-theme="dark"] .numberinput,
+        [data-bs-theme="dark"] .emailinput,
+        [data-bs-theme="dark"] .urlinput,
+        [data-bs-theme="dark"] .passwordinput,
+        [data-bs-theme="dark"] .textarea,
+        [data-bs-theme="dark"] .dateinput,
+        [data-bs-theme="dark"] .select {
+            background-color: var(--bs-body-bg) !important;
+            border-color: var(--bs-border-color) !important;
+            color: var(--bs-body-color) !important;
+        }
+
+        /* 12. Color del 'placeholder' */
         [data-bs-theme="dark"] .form-control::placeholder {
             color: #6b7280;
         }
 
-        /* 11. Estilos al hacer clic (focus) */
+        /* 13. Estilos al hacer clic (focus) */
         [data-bs-theme="dark"] .form-control:focus,
-        [data-bs-theme="dark"] .form-select:focus {
+        [data-bs-theme="dark"] .form-select:focus,
+        [data-bs-theme="dark"] .textinput:focus,
+        [data-bs-theme="dark"] .numberinput:focus,
+        [data-bs-theme="dark"] .emailinput:focus,
+        [data-bs-theme="dark"] .urlinput:focus,
+        [data-bs-theme="dark"] .passwordinput:focus,
+        [data-bs-theme="dark"] .textarea:focus,
+        [data-bs-theme="dark"] .dateinput:focus,
+        [data-bs-theme="dark"] .select:focus {
             background-color: #1f2937 !important; /* Color de tarjeta */
             border-color: var(--bs-primary) !important;
             color: var(--bs-body-color) !important;

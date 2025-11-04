@@ -17,6 +17,9 @@ from decimal import Decimal
 # Para manejar errores (ej. si crea un presupuesto duplicado)
 from django.db import IntegrityError
 from django.contrib import messages
+from django.db.models import Sum # Para sumar en la base de datos
+from django.db.models import F
+import datetime # Para saber el mes actual
 
 
 # Vista Basada en Clase para el Registro
@@ -228,7 +231,7 @@ def transaction_update(request, pk):
     }
     return render(request, 'tracker/transaction_form.html', context)
 
-# --- Eliminar Transacción ---
+# --- Eliminar Transacción (CORREGIDA CON F()) ---
 @login_required
 @require_POST 
 def transaction_delete(request, pk):
