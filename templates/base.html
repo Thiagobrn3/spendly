@@ -30,31 +30,60 @@
             --bs-body-color: #9ca3af;
             --bs-border-color: #374151;
             --bs-light: #F9FAFB;
-            
+
             /* 3. Colores de Componentes */
             --bs-card-bg: #1f2937;
-            --bs-dark-bg-subtle: #1f2937; /* Fondo de Modal */
-            
-            /* 4. Sobrescritura de variables de Formulario */
-            --bs-body-bg-tertiary: #111827 !important; 
-            --bs-tertiary-bg: #111827 !important;
-            --bs-form-bg: #111827 !important;
-            --bs-border-color: #374151 !important;
-            --bs-body-color: #f9fafb !important;
-            --bs-form-color: #f9fafb !important;
+            --bs-dark-bg-subtle: #1f2937;
+            /* Fondo de Modal */
         }
 
-        /* 5. Fuente de la referencia */
-        body, .btn, .navbar-brand, .nav-link, h1, h2, h3, h4, h5 {
+        /* ==============================================
+           ¡LA CORRECCIÓN DE FORMULARIOS!
+           Sobrescribimos las variables de formulario de BS5.3
+           ==============================================
+        */
+        [data-bs-theme="dark"] {
+            /* * Fondo del Input/Select:
+             * Le decimos que use nuestro fondo de body (#111827)
+             * en lugar de su azul por defecto.
+            */
+            --bs-form-control-bg: #111827;
+            --bs-form-select-bg: #111827;
+
+            /* Color de texto */
+            --bs-form-control-color: #f9fafb;
+            --bs-form-select-color: #f9fafb;
+
+            /* Color de borde */
+            --bs-form-control-border-color: #374151;
+            --bs-form-select-border-color: #374151;
+        }
+
+        /* 4. Fuente de la referencia */
+        body,
+        .btn,
+        .navbar-brand,
+        .nav-link,
+        h1,
+        h2,
+        h3,
+        h4,
+        h5 {
             font-family: 'Inter', sans-serif;
         }
 
-        /* 6. Estilos de Navbar */
-        .navbar-nav .nav-link { font-weight: 500; color: var(--bs-gray-400); }
+        /* 5. Estilos de Navbar */
+        .navbar-nav .nav-link {
+            font-weight: 500;
+            color: var(--bs-gray-400);
+        }
+
         .navbar-nav .nav-link.active,
-        .navbar-nav .nav-link:hover { color: var(--bs-primary); }
-        
-        /* 7. Estilo de Botón Primario */
+        .navbar-nav .nav-link:hover {
+            color: var(--bs-primary);
+        }
+
+        /* 6. Estilo de Botón Primario */
         .btn-primary {
             --bs-btn-bg: var(--bs-primary);
             --bs-btn-border-color: var(--bs-primary);
@@ -63,63 +92,36 @@
             --bs-btn-color: white;
             --bs-btn-font-weight: 700;
         }
-        
-        /* 8. Estilo de "gasto" e "ingreso" */
-        .gasto { color: #EF4444; font-weight: 600; }
-        .ingreso { color: #22C55E; font-weight: 600; }
 
-        /* 9. Iconos Material */
+        /* 7. Estilo de "gasto" e "ingreso" */
+        .gasto {
+            color: #EF4444;
+            font-weight: 600;
+        }
+
+        .ingreso {
+            color: #22C55E;
+            font-weight: 600;
+        }
+
+        /* 8. Iconos Material */
         .material-symbols-outlined {
-          font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24
-        }
-        
-        /* ==============================================
-           ¡REGLAS DE FORMULARIO (NIVEL DIOS)!
-           ==============================================
-        */
-        
-        /* 10. Atacamos las clases de Bootstrap */
-        [data-bs-theme="dark"] .form-control,
-        [data-bs-theme="dark"] .form-select {
-            background-color: var(--bs-body-bg) !important;
-            border-color: var(--bs-border-color) !important;
-            color: var(--bs-body-color) !important;
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24
         }
 
-        /* 11. Atacamos las clases específicas de Crispy-Forms */
-        [data-bs-theme="dark"] .textinput,
-        [data-bs-theme="dark"] .numberinput,
-        [data-bs-theme="dark"] .emailinput,
-        [data-bs-theme="dark"] .urlinput,
-        [data-bs-theme="dark"] .passwordinput,
-        [data-bs-theme="dark"] .textarea,
-        [data-bs-theme="dark"] .dateinput,
-        [data-bs-theme="dark"] .select {
-            background-color: var(--bs-body-bg) !important;
-            border-color: var(--bs-border-color) !important;
-            color: var(--bs-body-color) !important;
-        }
-
-        /* 12. Color del 'placeholder' */
+        /* 9. Color del 'placeholder' */
         [data-bs-theme="dark"] .form-control::placeholder {
             color: #6b7280;
         }
 
-        /* 13. Estilos al hacer clic (focus) */
+        /* 10. Estilos al hacer clic (focus) */
         [data-bs-theme="dark"] .form-control:focus,
-        [data-bs-theme="dark"] .form-select:focus,
-        [data-bs-theme="dark"] .textinput:focus,
-        [data-bs-theme="dark"] .numberinput:focus,
-        [data-bs-theme="dark"] .emailinput:focus,
-        [data-bs-theme="dark"] .urlinput:focus,
-        [data-bs-theme="dark"] .passwordinput:focus,
-        [data-bs-theme="dark"] .textarea:focus,
-        [data-bs-theme="dark"] .dateinput:focus,
-        [data-bs-theme="dark"] .select:focus {
-            background-color: #1f2937 !important; /* Color de tarjeta */
-            border-color: var(--bs-primary) !important;
-            color: var(--bs-body-color) !important;
-            box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25) !important;
+        [data-bs-theme="dark"] .form-select:focus {
+            background-color: #1f2937;
+            /* Color de tarjeta */
+            border-color: var(--bs-primary);
+            color: #f9fafb;
+            box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
         }
     </style>
 
