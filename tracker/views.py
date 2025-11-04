@@ -20,6 +20,9 @@ from django.contrib import messages
 from django.db.models import Sum # Para sumar en la base de datos
 from django.db.models import F
 import datetime # Para saber el mes actual
+from django.db.models import Sum, F, Q
+from django.db.models.functions import TruncMonth
+import datetime
 
 
 # Vista Basada en Clase para el Registro
@@ -383,3 +386,57 @@ def delete_budget(request, pk):
     budget = get_object_or_404(Budget, pk=pk, user=request.user)
     budget.delete()
     return redirect('manage_budgets')
+
+# --- VISTA DE REPORTES ---
+@login_required
+def reports(request):
+    today = datetime.date.today()
+    
+    # Filtramos las transacciones de este año
+    transactions_this_year = Transaction.objects.filter(
+        user=request.user,
+        date__year=today.year
+    )
+    
+    # Agrupamos por mes y sumamos ingresos y gastos
+    report_data = transactions_this_year \
+        .annotate(month=TruncMonth('date')) \
+        .values('month') \
+        .annotate(
+            total_ingreso=Sum('amount', filter=Q(type='ingreso')),
+            total_gasto=Sum('amount', filter=Q(type='gasto'))
+        ) \
+        .order_by('month')
+
+    # Preparamos los datos para Chart.js
+    
+    # Creamos un "mapa" con todos los meses en 0
+    month_map = {i: {'ingreso': 0, 'gasto': 0} for i in range(1, 13)}
+    
+    # Llenamos el mapa con los datos de la consulta
+    for item in report_data:
+        if item['month']: # Nos aseguramos de que no sea nulo
+            month_num = item['month'].month
+            month_map[month_num]['ingreso'] = item['total_ingreso'] or 0
+            month_map[month_num]['gasto'] = item['total_gasto'] or 0
+
+    # Creamos las listas finales para el gráfico
+    labels = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
+    chart_labels = []
+    chart_ingresos = []
+    chart_gastos = []
+
+    for i in range(1, 13):
+        # Solo mostramos los meses hasta el mes actual
+        if i <= today.month:
+            chart_labels.append(labels[i-1])
+            chart_ingresos.append(float(month_map[i]['ingreso']))
+            chart_gastos.append(float(month_map[i]['gasto']))
+
+    context = {
+        'chart_labels': chart_labels,
+        'chart_ingresos': chart_ingresos,
+        'chart_gastos': chart_gastos,
+    }
+    
+    return render(request, 'tracker/reports.html', context)

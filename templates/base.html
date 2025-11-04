@@ -153,54 +153,34 @@
             <div class="collapse navbar-collapse" id="bdNavbar">
                 {% if user.is_authenticated %}
                 <ul class="navbar-nav flex-row flex-wrap bd-navbar-nav pt-2 py-md-0 ms-md-auto">
+
                     <li class="nav-item col-6 col-md-auto">
                         <a class="nav-link {% if request.resolver_match.url_name == 'index' %}active{% endif %}"
                             href="{% url 'index' %}">Dashboard</a>
                     </li>
+
                     <li class="nav-item col-6 col-md-auto">
                         <a class="nav-link {% if request.resolver_match.url_name == 'transaction_list' %}active{% endif %}"
                             href="{% url 'transaction_list' %}">Transacciones</a>
                     </li>
+
                     <li class="nav-item col-6 col-md-auto">
                         <a class="nav-link {% if request.resolver_match.url_name == 'manage_budgets' %}active{% endif %}"
                             href="{% url 'manage_budgets' %}">Presupuestos</a>
                     </li>
-                    <li class="nav-item col-6 col-md-auto">
-                        <a class="nav-link" href="#">Informes</a>
-                    </li>
-                    {% with active_config='manage_accounts,manage_cards,manage_recurring' %}
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle {% if request.resolver_match.url_name in active_config %}active{% endif %}"
-                            href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Configuración
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-dark">
-                            <li><a class="dropdown-item" href="{% url 'manage_accounts' %}">Cuentas</a></li>
-                            <li><a class="dropdown-item" href="{% url 'manage_cards' %}">Tarjetas</a></li>
-                            <li><a class="dropdown-item" href="{% url 'manage_recurring' %}">Fijos</a></li>
-                        </ul>
-                    </li>
-                    {% endwith %}
-                </ul>
 
-                <hr class="d-md-none text-white-50">
-
-                <ul class="navbar-nav flex-row flex-wrap ms-md-3">
-                    <li class="nav-item col-6 col-md-auto ms-2">
-                        <form action="{% url 'logout' %}" method="post" class="d-flex">
-                            {% csrf_token %}
-                            <button class="btn btn-outline-secondary" type="submit">Cerrar Sesión</button>
-                        </form>
-                    </li>
-                </ul>
-                {% else %}
-                <ul class="navbar-nav flex-row flex-wrap bd-navbar-nav pt-2 py-md-0 ms-md-auto">
                     <li class="nav-item col-6 col-md-auto">
-                        <a class="nav-link" href="{% url 'login' %}">Login</a>
+                        <a class="nav-link {% if request.resolver_match.url_name == 'reports' %}active{% endif %}"
+                            href="{% url 'reports' %}">Informes</a>
                     </li>
-                    <li class="nav-item col-6 col-md-auto">
-                        <a class="nav-link" href="{% url 'signup' %}">Registro</a>
-                    </li>
+                    <ul class="navbar-nav flex-row flex-wrap ms-md-3">
+                        <li class="nav-item col-6 col-md-auto ms-2">
+                            <form action="{% url 'logout' %}" method="post" class="d-flex">
+                                {% csrf_token %}
+                                <button class="btn btn-outline-secondary" type="submit">Cerrar Sesión</button>
+                            </form>
+                        </li>
+                    </ul>
                 </ul>
                 {% endif %}
             </div>
