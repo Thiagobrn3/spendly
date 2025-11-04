@@ -29,16 +29,13 @@ class TransactionForm(forms.ModelForm):
             'tarjeta_usada': 'Usando Tarjeta (Opcional)',
             'cuenta': 'Cuenta', 
         }
+        
+        # Este widget de 'date' es el único que realmente 
+        # necesitamos definir acá.
         widgets = {
-            'type': forms.Select(attrs={'class': 'form-select'}),
-            'cuenta': forms.Select(attrs={'class': 'form-select'}),
-            'amount': forms.NumberInput(attrs={'class': 'form-control'}),
-            'category': forms.Select(attrs={'class': 'form-select'}),
-            'description': forms.TextInput(attrs={'class': 'form-control'}),
             'date': forms.DateInput(
-                attrs={'type': 'date', 'class': 'form-control'}
+                attrs={'type': 'date'}
             ), 
-            'tarjeta_usada': forms.Select(attrs={'class': 'form-select'}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -48,50 +45,36 @@ class TransactionForm(forms.ModelForm):
         if user:
             self.fields['category'].queryset = Category.objects.filter(user=user)
             self.fields['tarjeta_usada'].queryset = CreditCard.objects.filter(user=user)
-            # --- ¡NUEVA LÍNEA! ---
-            # Filtramos las cuentas para que solo muestre las del usuario
             self.fields['cuenta'].queryset = Account.objects.filter(user=user)
 
-        # --- ¡CAMBIO EN LAYOUT! ---
-        # Hacemos el campo 'cuenta' visible y lo ponemos al lado de 'type'
         self.helper = FormHelper()
         self.helper.form_method = 'post'
+        
+        # --- ESTE ES EL ÚNICO LAYOUT QUE NECESITÁS ---
+        # Este layout usa 'Field' para aplicar las clases CSS 
+        # que tus estilos de base.html esperan.
         self.helper.layout = Layout(
             Row( 
+                # Forzamos la clase 'form-select'
                 Column(Field('type', css_class='form-select'), css_class='col-md-6'),
                 Column(Field('cuenta', css_class='form-select'), css_class='col-md-6'),
             ), 
             Row(
+                # Forzamos la clase 'form-control'
                 Column(Field('amount', css_class='form-control'), css_class='col-md-6'),
                 Column(Field('category', css_class='form-select'), css_class='col-md-6'),
             ),
+            # Forzamos la clase 'form-control'
             Field('description', css_class='form-control'), 
             Row(
-                # Al usar Field, también podemos forzar el type='date' aquí
-                Column(Field('date', css_class='form-control', type='date'), css_class='col-md-6'),
+                # Forzamos 'form-control' y usamos el widget de 'date'
+                Column(Field('date', css_class='form-control'), css_class='col-md-6'),
                 Column(Field('tarjeta_usada', css_class='form-select'), css_class='col-md-6'),
-            ),
-        )
-        
-        self.helper.layout = Layout(
-            Row( # Nueva fila
-                Column('type', css_class='col-md-6'),
-                Column('cuenta', css_class='col-md-6'), # ¡Campo Cuenta!
-            ), 
-            Row(
-                Column('amount', css_class='col-md-6'),
-                Column('category', css_class='col-md-6'),
-            ),
-            'description', 
-            Row(
-                Column('date', css_class='col-md-6'),
-                Column('tarjeta_usada', css_class='col-md-6'),
             ),
         )
 
 # Formulario para Gastos/Ingresos Fijos
 class RecurringTransactionForm(forms.ModelForm):
-    # ... (esta clase queda igual) ...
     class Meta:
         model = RecurringTransaction
         exclude = ['user']
