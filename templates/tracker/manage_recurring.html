@@ -4,55 +4,60 @@
 {% block title %}Ingresos/Gastos Fijos - Spendly{% endblock %}
 
 {% block content %}
-    <h1 class="mb-4">Administrar Ingresos/Gastos Fijos</h1>
+    <h1 class="h2 fw-bold text-white mb-1">Administrar Ingresos/Gastos Fijos</h1>
     <p class="text-body-secondary mb-4">
         Registrá aquí tus gastos o ingresos que se repiten (ej. Alquiler, Sueldo, Netflix).
     </p>
 
-    <div class="row g-4">
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-danger" role="alert">
+            {{ message }}
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row g-4 g-lg-5">
         <div class="col-lg-5">
-            <div class="card">
-                <div class="card-header">
-                    <h4>Agregar Nuevo</h4>
-                </div>
-                <div class="card-body">
+            <div class="card bg-dark border-secondary-subtle shadow-sm rounded-4">
+                <div class="card-body p-4 p-lg-5">
+                    <h3 class="h4 fw-bold text-white mb-4">Agregar Nuevo</h3>
                     <form method="post">
                         {% csrf_token %}
                         {{ form|crispy }}
-                        <button type="submit" class="btn-primary">Guardar</button>
+                        <button type="submit" class="btn btn-primary mt-3">Guardar</button>
                     </form>
                 </div>
             </div>
         </div>
 
         <div class="col-lg-7">
-            <div class="card">
-                <div class="card-header">
-                    <h4>Mis Fijos</h4>
-                </div>
-                <div class="card-body">
+            <div class="card bg-dark border-secondary-subtle shadow-sm rounded-4">
+                <div class="card-body p-4 p-lg-5">
+                    <h3 class="h4 fw-bold text-white mb-4">Mis Fijos</h3>
                     <ul class="list-group list-group-flush">
                         {% for item in items %}
-                        <li class="list-group-item d-flex justify-content-between align-items-center" style="background-color: transparent;">
-                            <span>
-                                <strong>{{ item.description }}</strong> ({{ item.get_frequency_display }})
-                                <span class="{{ item.type }}">${{ item.amount }}</span>
-                                {% if item.category %}({{ item.category.name }}){% endif %}
-                            </span>
-                            
+                        <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent border-secondary-subtle px-0 py-3">
+                            <div>
+                                <h5 class="h6 fw-semibold text-white mb-0">{{ item.description }}</h5>
+                                <small class="text-body-secondary">{{ item.get_frequency_display }} {% if item.category %}({{ item.category.name }}){% endif %}</small>
+                                <div class="{% if item.type == 'gasto' %}gasto{% else %}ingreso{% endif %} fw-medium">${{ item.amount }}</div>
+                            </div>
                             <form action="{% url 'delete_recurring' item.pk %}" method="post" onsubmit="return confirm('¿Estás seguro de que querés eliminar \'{{ item.description }}\'?');">
                                 {% csrf_token %}
-                                <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                                <button type="submit" class="btn btn-sm btn-outline-danger d-flex align-items-center" title="Eliminar">
+                                    <span class="material-symbols-outlined fs-6">delete</span>
+                                </button>
                             </form>
                         </li>
                         {% empty %}
-                        <li class="list-group-item" style="background-color: transparent;">No tenés items recurrentes.</li>
-                        
+                        <li class="list-group-item bg-transparent border-secondary-subtle px-0 py-3">
+                            <p class="text-body-secondary mb-0">No tenés items recurrentes.</p>
+                        </li>
                         {% endfor %}
                     </ul>
                 </div>
             </div>
         </div>
     </div>
-
 {% endblock %}

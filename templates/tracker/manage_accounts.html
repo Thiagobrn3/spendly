@@ -4,48 +4,55 @@
 {% block title %}Administrar Cuentas - Spendly{% endblock %}
 
 {% block content %}
-    <h1 class="mb-4">Administrar Cuentas</h1>
+    <h1 class="h2 fw-bold text-white mb-1">Administrar Cuentas</h1>
     <p class="text-body-secondary mb-4">
         Creá tus cuentas (bancarias, efectivo, etc.) y asignales un saldo inicial.
     </p>
 
-    <div class="row g-4">
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-danger" role="alert">
+            {{ message }}
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row g-4 g-lg-5">
         <div class="col-lg-5">
-            <div class="card">
-                <div class="card-header">
-                    <h4>Agregar Cuenta</h4>
-                </div>
-                <div class="card-body">
+            <div class="card bg-dark border-secondary-subtle shadow-sm rounded-4">
+                <div class="card-body p-4 p-lg-5">
+                    <h3 class="h4 fw-bold text-white mb-4">Agregar Cuenta</h3>
                     <form method="post">
                         {% csrf_token %}
                         {{ form|crispy }}
-                        <button type="submit" class="btn-primary">Guardar</button>
+                        <button type="submit" class="btn btn-primary mt-3">Guardar</button>
                     </form>
                 </div>
             </div>
         </div>
 
         <div class="col-lg-7">
-            <div class="card">
-                <div class="card-header">
-                    <h4>Mis Cuentas</h4>
-                </div>
-                <div class="card-body">
+            <div class="card bg-dark border-secondary-subtle shadow-sm rounded-4">
+                <div class="card-body p-4 p-lg-5">
+                    <h3 class="h4 fw-bold text-white mb-4">Mis Cuentas</h3>
                     <ul class="list-group list-group-flush">
                         {% for account in accounts %}
-                        <li class="list-group-item d-flex justify-content-between align-items-center" style="background-color: transparent;">
-                            <span>
-                                <strong>{{ account.name }}</strong> 
-                                - Saldo: <span style="font-weight: bold; color: var(--text-main);">${{ account.balance|floatformat:2 }}</span>
-                            </span>
-                            
+                        <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent border-secondary-subtle px-0 py-3">
+                            <div>
+                                <h5 class="h6 fw-semibold text-white mb-0">{{ account.name }}</h5>
+                                <small class="text-body-secondary">Saldo: ${{ account.balance|floatformat:2 }}</small>
+                            </div>
                             <form action="{% url 'delete_account' account.pk %}" method="post" onsubmit="return confirm('¿Estás seguro de que querés eliminar \'{{ account.name }}\'?\nSolo podrás hacerlo si no tiene transacciones.');">
                                 {% csrf_token %}
-                                <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                                <button type="submit" class="btn btn-sm btn-outline-danger d-flex align-items-center" title="Eliminar">
+                                    <span class="material-symbols-outlined fs-6">delete</span>
+                                </button>
                             </form>
                         </li>
                         {% empty %}
-                        <li class="list-group-item" style="background-color: transparent;">No tenés cuentas registradas.</li>
+                        <li class="list-group-item bg-transparent border-secondary-subtle px-0 py-3">
+                            <p class="text-body-secondary mb-0">No tenés cuentas registradas.</p>
+                        </li>
                         {% endfor %}
                     </ul>
                 </div>

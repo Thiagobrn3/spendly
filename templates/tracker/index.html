@@ -1,242 +1,301 @@
 {% extends "base.html" %}
-{% load crispy_forms_tags %} {% block title %}Dashboard - Spendly{% endblock %}
+{% load crispy_forms_tags %}
+
+{% block title %}Dashboard - Spendly{% endblock %}
 
 {% block content %}
-<h1>¡Hola, {{ user.username }}!</h1>
 
-<div class="row g-4">
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div class="flex-fill">
+        <h1 class="h2 fw-bold text-white mb-0">¡Bienvenido, {{ user.username }}!</h1>
+        <p class="text-body-secondary mb-0">Aquí tienes un resumen de tu salud financiera.</p>
+    </div>
+    
+    <div class="d-flex gap-2">
+        <button type="button" class="btn btn-outline-secondary d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#categoryModal">
+            <span class="material-symbols-outlined me-2 fs-6">sell</span>
+            <span>Nueva Categoría</span>
+        </button>
 
-    <div class="col-lg-5">
-        <div class="card mb-4">
-            <div class="card-header">
-                <h4>Agregar movimiento</h4>
-            </div>
-            <div class="card-body">
-                <form method="post" action="{% url 'add_transaction' %}">
-                    {% csrf_token %}
-                    {{ t_form|crispy }}
-                    <div class="row">
-                        <div class="col-md-6">
-                            </div>
-                        <div class="col-md-6">
-                             <button type="submit" class="btn-primary w-100" name="submit_transaction">Agregar</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-        
-        <div class="card mb-4">
-            <div class="card-header">
-                <h4>Agregar Categoría</h4>
-            </div>
-            <div class="card-body">
-                <form method="post" action="{% url 'add_category' %}">
-                    {% csrf_token %}
-                    {{ c_form|crispy }}
-                    <button type="submit" class="btn btn-outline-primary" name="submit_category">Crear</button>
-                </form>
-                <hr>
-                <ul class="list-group list-group-flush">
-                    {% for c in categories %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center" style="background-color: transparent; padding-left: 0; padding-right: 0;">
-                        <span>{{ c.name }}</span>
-                        <form action="{% url 'category_delete' c.pk %}" method="post" onsubmit="return confirm('¿Estás seguro de que querés eliminar la categoría {{ c.name }}?\nLas transacciones existentes se marcarán como Sin Categoría.');">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
-                        </form>
-                    </li>
-                    {% empty %}
-                    <li class="list-group-item" style="background-color: transparent;">No tenés categorías.</li>
-                    {% endfor %}
-                </ul>
-            </div>
-        </div>
-    </div> <div class="col-lg-7">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h4>
-                    Ingresos y gastos 
-                    <span class="text-body-secondary fs-6">({{ selected_periodo|title }})</span>
-                </h4>
-                
-                <form method="GET" action="{% url 'index' %}">
-                    <select class="form-select" name="periodo" style="width: auto;" onchange="this.form.submit();">
-                        <option value="este_mes" {% if selected_periodo == 'este_mes' %}selected{% endif %}>
-                            Este mes
-                        </option>
-                        <option value="mes_pasado" {% if selected_periodo == 'mes_pasado' %}selected{% endif %}>
-                            Mes pasado
-                        </option>
-                        <option value="este_ano" {% if selected_periodo == 'este_ano' %}selected{% endif %}>
-                            Este año
-                        </option>
-                    </select>
-                </form>
-            </div>
-            <div class="card-body">
-                <ul class="list-group list-group-flush">
-                    {% for t in transactions %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center"
-                        style="background-color: transparent; padding-left: 0; padding-right: 0;">
-                        <div class="d-flex align-items-center">
-                            <span class="d-inline-block me-3" style="
-                                width: 40px; height: 40px; border-radius: 50%; text-align: center; 
-                                line-height: 40px; font-size: 1.2rem;
-                                color: {% if t.type == 'gasto' %}#E11D48{% else %}#16A34A{% endif %};
-                                background-color: {% if t.type == 'gasto' %}#FEE2E2{% else %}#D1FAE5{% endif %};
-                            ">
-                                {% if t.type == 'gasto' %}-{% else %}+{% endif %}
-                            </span>
-                            <div>
-                                <strong style="color: var(--text-main);">{{ t.description }}</strong>
-                                <small class="d-block text-muted">{% if t.category %}{{ t.category.name }}{% endif %} -
-                                    {{ t.date|date:"d/m/Y" }}</small>
-                            </div>
-                        </div>
-                        <div class="d-flex align-items-center">
-                            <span class="{% if t.type == 'gasto' %}gasto{% else %}ingreso{% endif %} me-3" style="min-width: 80px; text-align: right;">
-                                {% if t.type == 'gasto' %}-{% else %}+{% endif %}${{ t.amount|floatformat:2 }}
-                            </span>
-                            <a href="{% url 'transaction_update' t.pk %}" class="btn btn-sm btn-outline-secondary me-1">Editar</a>
-                            <form action="{% url 'transaction_delete' t.pk %}" method="post" onsubmit="return confirm('¿Estás seguro de que querés eliminar esta transacción?');">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
-                            </form>
-                        </div>
-                    </li>
-                    {% empty %}
-                    <li class="list-group-item text-center" style="background-color: transparent;">
-                        Aún no tenés transacciones.
-                    </li>
-                    {% endfor %}
-                </ul>
-            </div>
-        </div>
-    </div> </div> <div class="row g-4 mt-1">
+        <button type="button" class="btn btn-primary d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#transactionModal">
+            <span class="material-symbols-outlined me-2 fs-6">add_circle</span>
+            <span>Añadir Transacción</span>
+        </button>
+    </div>
+</div>
 
-    <div class="col-lg-4">
-        <div class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h4>Mis Cuentas</h4>
-                <a href="{% url 'manage_accounts' %}" class="btn btn-sm btn-outline-primary">Administrar</a>
-            </div>
-            <div class="card-body">
-                <ul class="list-group list-group-flush">
-                    {% for account in accounts %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center"
-                        style="background-color: transparent; padding-left: 0; padding-right: 0;">
-                        <strong style="color: var(--text-main);">{{ account.name }}</strong>
-                        <span style="font-weight: 600; color: var(--text-main);">${{ account.balance|floatformat:2 }}</span>
-                    </li>
-                    {% empty %}
-                    <li class="list-group-item" style="background-color: transparent;">
-                        No tenés cuentas. <a href="{% url 'manage_accounts' %}">Agregá una</a>.
-                    </li>
-                    {% endfor %}
-                </ul>
-            </div>
-        </div>
-    </div> <div class="col-lg-4">
-        <div class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h4>Presupuestos ({{ selected_periodo|title }})</h4>
-                <a href="{% url 'manage_budgets' %}" class="btn btn-sm btn-outline-primary">Administrar</a>
-            </div>
-            <div class="card-body">
-                {% for budget in budgets_progress %}
-                    <div class="mb-3">
-                        <div class="d-flex justify-content-between">
-                            <strong>{{ budget.category_name }}</strong>
-                            <span>
-                                <span class="{% if budget.over_limit %}gasto{% else %}text-body-secondary{% endif %}">
-                                    ${{ budget.spent|floatformat:2 }}
-                                </span>
-                                / ${{ budget.limit|floatformat:2 }}
-                            </span>
-                        </div>
-                        <div class="progress" role="progressbar" aria-valuenow="{{ budget.percentage|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100">
-                            <div class="progress-bar {% if budget.over_limit %}bg-danger{% else %}{% endif %}" 
-                                 style="width: {{ budget.percentage|floatformat:0 }}%">
-                            </div>
-                        </div>
-                    </div>
-                {% empty %}
-                    <div class="text-center text-body-secondary">
-                        <small>No tenés presupuestos definidos. <a href="{% url 'manage_budgets' %}">Agregá uno</a>.</small>
-                    </div>
-                {% endfor %}
-            </div>
-        </div>
-    </div> <div class="col-lg-4">
-        <div class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h4>Mis Tarjetas</h4>
-                <a href="{% url 'manage_cards' %}" class="btn btn-sm btn-outline-primary">Administrar</a>
-            </div>
-            <div class="card-body">
-                <ul class="list-group list-group-flush">
-                    {% for card in cards %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center"
-                        style="background-color: transparent;">
-                        <div>
-                            <strong style="color: var(--text-main);">{{ card.name }}</strong>
-                            <small class="d-block text-muted">Vence el día {{ card.due_date }}</small>
-                        </div>
-                        <span class="gasto">${{ card.get_balance_due|floatformat:2 }}</span>
-                    </li>
-                    {% empty %}
-                    <li class="list-group-item" style="background-color: transparent;">
-                        No tenés tarjetas. <a href="{% url 'manage_cards' %}">Agregá una</a>.
-                    </li>
-                    {% endfor %}
-                </ul>
-            </div>
-        </div>
-    </div> </div> <div class="row g-4">
-    <div class="col-lg-4">
-        <div class="card mb-4">
-            <div class="card-header">
-                <h4>Gastos ({{ selected_periodo|title }})</h4>
-            </div>
-            <div class="card-body">
-                <h5 class="text-center">Total:
-                    <span class="gasto">${{ total_spent|floatformat:2 }}</span>
-                </h5>
-                <div style="width: 100%;">
-                    <canvas id="myPieChart"></canvas>
+
+<div class="row g-4 g-lg-5">
+
+    <div class="col-lg-8">
+        <div class="d-flex flex-column gap-4 gap-lg-5">
+
+            <div class="card bg-dark border-secondary-subtle shadow-sm rounded-4">
+                <div class="card-body p-4 p-lg-5">
+                    <p class="text-body-secondary mb-2">Saldo Total Disponible</p>
+                    <h2 class="h1 fw-bold text-white mb-1">${{ total_balance|floatformat:2 }}</h2>
+                    <p class="mb-0 {% if net_change >= 0 %}ingreso{% else %}gasto{% endif %} d-flex align-items-center fw-medium">
+                        <span class="material-symbols-outlined fs-6 me-1">
+                            {% if net_change >= 0 %}arrow_upward{% else %}arrow_downward{% endif %}
+                        </span>
+                        {% if net_change >= 0 %}+{% endif %}${{ net_change|floatformat:2 }} {{ selected_periodo|title }}
+                    </p>
                 </div>
             </div>
+
+            <div>
+                <h3 class="h4 fw-bold text-white mb-3">Cuentas</h3>
+                <div class="row row-cols-1 row-cols-md-3 g-4">
+                    
+                    {% for account in accounts %}
+                    <div class="col">
+                        <div class="card h-100 bg-dark border-secondary-subtle shadow-sm rounded-4">
+                            <div class="card-body d-flex flex-column p-4">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="d-flex align-items-center justify-content-center rounded-circle me-3" style="width: 40px; height: 40px; background-color: rgba(var(--bs-primary-rgb), 0.2);">
+                                        
+                                        <span class="material-symbols-outlined fs-5" style="color: var(--bs-primary);">
+                                            {% if 'banco' in account.name|lower %}
+                                                account_balance
+                                            {% else %}
+                                                wallet
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <h5 class="h6 fw-semibold text-white mb-0">{{ account.name }}</h5>
+                                        <small class="text-body-secondary">Saldo</small>
+                                    </div>
+                                </div>
+                                <h4 class="h3 fw-bold text-white mt-auto mb-0">${{ account.balance|floatformat:2 }}</h4>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-12">
+                        <p class="text-body-secondary">No tenés cuentas. <a href="{% url 'manage_accounts' %}">Agregá una</a>.</p>
+                    </div>
+                    {% endfor %}
+
+                </div>
+            </div>
+
+            <div class="card bg-dark border-secondary-subtle shadow-sm rounded-4">
+                <div class="card-body p-4 p-lg-5">
+                    
+                    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+                        <h3 class="h4 fw-bold text-white mb-0">Movimientos Recientes</h3>
+                        <form method="GET" action="{% url 'index' %}">
+                            <select class="form-select form-select-sm bg-dark text-white border-secondary-subtle" name="periodo" style="width: auto;" onchange="this.form.submit();">
+                                <option value="este_mes" {% if selected_periodo == 'este_mes' %}selected{% endif %}>
+                                    Este mes
+                                </option>
+                                <option value="mes_pasado" {% if selected_periodo == 'mes_pasado' %}selected{% endif %}>
+                                    Mes pasado
+                                </option>
+                                <option value="este_ano" {% if selected_periodo == 'este_ano' %}selected{% endif %}>
+                                    Este año
+                                </option>
+                            </select>
+                        </form>
+                    </div>
+
+                    <ul class="list-group list-group-flush">
+                        {% for t in transactions|slice:":5" %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent border-secondary-subtle px-0 py-3">
+                            <div class="d-flex align-items-center">
+                                <div class="d-flex align-items-center justify-content-center rounded-circle me-3" style="width: 40px; height: 40px; background-color: rgba(var(--bs-primary-rgb), 0.1);">
+                                    <span class="material-symbols-outlined fs-5 text-primary">
+                                        {% if t.type == 'gasto' %}restaurant{% else %}paid{% endif %}
+                                    </span>
+                                </div>
+                                <div>
+                                    <h5 class="h6 fw-semibold text-white mb-0">{{ t.description }}</h5>
+                                    <small class="text-body-secondary">{{ t.date|date:"d M, Y" }} - {{ t.cuenta.name }}</small>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="fw-semibold {% if t.type == 'gasto' %}gasto{% else %}ingreso{% endif %}" style="min-width: 80px; text-align: right;">
+                                    {% if t.type == 'gasto' %}-{% else %}+{% endif %}${{ t.amount|floatformat:2 }}
+                                </span>
+                                <div class="d-flex gap-2">
+                                    <a href="{% url 'transaction_update' t.pk %}" class="btn btn-sm btn-outline-secondary d-flex align-items-center p-1" title="Editar">
+                                        <span class="material-symbols-outlined fs-6">edit</span>
+                                    </a>
+                                    <form action="{% url 'transaction_delete' t.pk %}" method="post" onsubmit="return confirm('¿Estás seguro de que querés eliminar esta transacción?');">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-outline-danger d-flex align-items-center p-1" title="Eliminar">
+                                            <span class="material-symbols-outlined fs-6">delete</span>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </li>
+                        {% empty %}
+                        <li class="list-group-item bg-transparent border-secondary-subtle px-0 py-3">
+                            <p class="text-body-secondary mb-0">Aún no tenés transacciones en este período.</p>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    <div class="text-center mt-3">
+                        <a href="#" class="btn btn-link text-primary fw-semibold">Ver todas las transacciones</a>
+                    </div>
+                </div>
+            </div>
+
         </div>
-    </div> </div> {{ chart_labels|json_script:"chart-labels" }}
+    </div> <div class="col-lg-4">
+        <div class="d-flex flex-column gap-4 gap-lg-5">
+
+            <div class="card bg-dark border-secondary-subtle shadow-sm rounded-4">
+                <div class="card-body p-4 p-lg-5">
+                    <h3 class="h4 fw-bold text-white mb-4">Progreso de Presupuestos</h3>
+                    <div class="d-flex flex-column gap-4">
+                        {% for budget in budgets_progress %}
+                        <div>
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="fw-medium text-white-50">{{ budget.category_name }}</span>
+                                <span class="text-body-secondary">
+                                    <span class="{% if budget.over_limit %}gasto{% else %}text-white{% endif %} fw-medium">${{ budget.spent|floatformat:2 }}</span> 
+                                    / ${{ budget.limit|floatformat:2 }}
+                                </span>
+                            </div>
+                            <div class="progress" role="progressbar" style="height: 8px;">
+                                <div class="progress-bar {% if budget.over_limit %}bg-danger{% else %}bg-primary{% endif %}" 
+                                     style="width: {{ budget.percentage|floatformat:0 }}%">
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <p class="text-body-secondary mb-0">No tenés presupuestos. <a href="{% url 'manage_budgets' %}">Agregá uno</a>.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="card bg-dark border-secondary-subtle shadow-sm rounded-4">
+                <div class="card-body p-4 p-lg-5">
+                    <h3 class="h4 fw-bold text-white mb-4">Gráfico de Gastos</h3>
+                    <div class="mb-4" style="position: relative; height: 250px;">
+                        <canvas id="myPieChart"></canvas>
+                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+                            <span class="text-body-secondary d-block">Total Gastado</span>
+                            <span class="h4 fw-bold text-white">${{ total_spent|floatformat:2 }}</span>
+                        </div>
+                    </div>
+                    <div id="chart-legend" class="d-flex flex-column gap-2"></div>
+                </div>
+            </div>
+
+        </div>
+    </div> </div> <div class="modal fade" id="transactionModal" tabindex="-1" aria-labelledby="transactionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-secondary-subtle">
+            <form method="post" action="{% url 'add_transaction' %}">
+                {% csrf_token %}
+                <div class="modal-header border-secondary-subtle">
+                    <h1 class="modal-title fs-5 fw-bold text-white" id="transactionModalLabel">Añadir Transacción</h1>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    {{ t_form|crispy }}
+                </div>
+                <div class="modal-footer border-secondary-subtle">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Transacción</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="categoryModal" tabindex="-1" aria-labelledby="categoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-secondary-subtle">
+            <form method="post" action="{% url 'add_category' %}">
+                {% csrf_token %}
+                <div class="modal-header border-secondary-subtle">
+                    <h1 class="modal-title fs-5 fw-bold text-white" id="categoryModalLabel">Crear Nueva Categoría</h1>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    {{ c_form|crispy }}
+                </div>
+                <div class="modal-footer border-secondary-subtle">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Categoría</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+{{ chart_labels|json_script:"chart-labels" }}
 {{ chart_data|json_script:"chart-data" }}
 <script>
     const ctx = document.getElementById('myPieChart').getContext('2d');
     const chartLabels = JSON.parse(document.getElementById('chart-labels').textContent);
     const chartData = JSON.parse(document.getElementById('chart-data').textContent);
+    
+    const chartColors = ['#22C55E', '#3B82F6', '#A855F7', '#EAB308', '#F97316', '#EF4444'];
+
     new Chart(ctx, {
-        type: 'pie',
+        type: 'doughnut', 
         data: {
             labels: chartLabels,
             datasets: [{
-                label: 'Gastos del mes',
+                label: 'Gastos',
                 data: chartData,
-                backgroundColor: [
-                    '#8A7CFF', '#4ED9C1', '#81D4FA', '#5C6BC0', '#FFA726', '#FF7043',
-                ],
+                backgroundColor: chartColors,
+                borderColor: '#111827', 
+                borderWidth: 4,
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            cutout: '70%', 
             plugins: {
                 legend: {
-                    labels: {
-                        color: 'var(--text-main)'
-                    }
+                    display: false, 
+                },
+                tooltip: {
+                    backgroundColor: '#1f2937',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    borderColor: '#374151',
+                    borderWidth: 1,
                 }
             }
         }
     });
+
+    // Generar leyenda HTML personalizada
+    const legendContainer = document.getElementById('chart-legend');
+    
+    const totalSpentForJS = parseFloat({{ total_spent|floatformat:2|default:"1" }});
+
+    chartLabels.forEach((label, index) => {
+        const value = chartData[index];
+        
+        let percent = 0;
+        if (totalSpentForJS > 0) {
+            percent = (value / totalSpentForJS) * 100;
+        }
+        
+        const item = `
+            <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                    <div style="width: 12px; height: 12px; border-radius: 50%; background-color: ${chartColors[index % chartColors.length]}"></div>
+                    <span class="text-body-secondary">${label}</span>
+                </div>
+                <span class="fw-medium text-white-50">$${value.toFixed(2)} (${percent.toFixed(0)}%)</span>
+            </div>
+        `;
+        legendContainer.innerHTML += item;
+    });
+
 </script>
 {% endblock %}

@@ -1,5 +1,6 @@
+{% load static %}
 <!doctype html>
-<html lang="es">
+<html lang="es" data-bs-theme="dark">
 
 <head>
     <meta charset="utf-8">
@@ -10,180 +11,180 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+
     <style>
-        /* 1. Paleta de Colores del Cliente */
         :root {
-            --bg-main: #F9FAFB;
-            --text-main: #1E1E1E;
-            --brand-lila: #7A5AF8;
-            --brand-menta: #4ED9C1;
-            --brand-menta-dark: #3CB6A3;
-            --brand-violeta: #8A7CFF;
-            --text-gray: #5F6368;
-            --card-bg: #FFFFFF;
-            --card-shadow: #E5E7EB;
+            /* 1. Colores de la referencia */
+            --bs-primary: #10B981;
+            --bs-primary-rgb: 16, 185, 129;
+            --bs-link-color: #10B981;
+            --bs-link-hover-color: #059669;
+
+            /* 2. Colores del modo oscuro */
+            --bs-dark: #111827;
+            --bs-body-bg: #111827;
+            --bs-body-color: #9ca3af;
+            --bs-border-color: #374151;
+            --bs-light: #F9FAFB;
+            
+            /* 3. Colores de Componentes */
+            --bs-card-bg: #1f2937;
+            --bs-dark-bg-subtle: #1f2937; /* Fondo de Modal */
+            
+            /* 4. ¡NUEVO! Sobrescribimos las variables de Formulario de Bootstrap */
+            --bs-form-bg: #111827;               /* Fondo del input */
+            --bs-form-border-color: #374151;     /* Borde del input */
+            --bs-form-color: #f9fafb;             /* Color del texto */
         }
 
-        /* 2. Aplicación a la página */
-        body {
-            background-color: var(--bg-main);
-            color: var(--text-main);
+        /* 5. Fuente de la referencia */
+        body, .btn, .navbar-brand, .nav-link, h1, h2, h3, h4, h5 {
+            font-family: 'Inter', sans-serif;
         }
 
-        /* 3. Estilo de las Cards (como en tu diseño) */
-        .card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--card-shadow);
-            /* Sombra sutil y bordes redondeados */
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
-            border-radius: 0.75rem;
-        }
+        /* 6. Estilos de Navbar (como antes) */
+        .navbar-nav .nav-link { font-weight: 500; color: var(--bs-gray-400); }
+        .navbar-nav .nav-link.active,
+        .navbar-nav .nav-link:hover { color: var(--bs-primary); }
 
-        .card-header {
-            background-color: transparent;
-            border-bottom: 1px solid var(--card-shadow);
-        }
-
-        /* 4. Navbar (fondo blanco, texto gris) */
-        .navbar {
-            background-color: var(--card-bg) !important;
-            border-bottom: 1px solid var(--card-shadow);
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
-        }
-
-        .navbar .navbar-brand {
-            color: var(--brand-lila) !important;
-            /* Logo Lila */
-            font-weight: bold;
-        }
-
-        .navbar .nav-link {
-            color: var(--text-gray) !important;
-            /* Texto Gris */
-        }
-
-        .navbar .nav-link.active,
-        .navbar .nav-link:hover {
-            color: var(--text-main) !important;
-            /* Texto Oscuro */
-        }
-
-        /* 5. Definición de Botones */
-
-        /* Botón Primario (Verde Menta) */
+        /* 7. Estilo de Botón Primario (como antes) */
         .btn-primary {
-            background-color: var(--brand-menta);
-            border-color: var(--brand-menta);
-            color: var(--text-main);
-            font-weight: 500;
+            --bs-btn-bg: var(--bs-primary);
+            --bs-btn-border-color: var(--bs-primary);
+            --bs-btn-hover-bg: #059669;
+            --bs-btn-hover-border-color: #059669;
+            --bs-btn-color: white;
+            --bs-btn-font-weight: 700;
+        }
+        
+        /* 8. Estilo de "gasto" e "ingreso" (como antes) */
+        .gasto { color: #EF4444; font-weight: 600; }
+        .ingreso { color: #22C55E; font-weight: 600; }
+
+        /* 9. Iconos Material (como antes) */
+        .material-symbols-outlined {
+          font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24
+        }
+        
+        /* ==============================================
+           ¡REGLAS DE FORMULARIO REFORZADAS!
+           ==============================================
+        */
+        
+        /* 10. Forzamos el estilo de inputs y selects */
+        [data-bs-theme="dark"] .form-control,
+        [data-bs-theme="dark"] .form-select {
+            background-color: var(--bs-form-bg) !important;
+            border-color: var(--bs-form-border-color) !important;
+            color: var(--bs-form-color) !important;
         }
 
-        .btn-primary:hover {
-            background-color: var(--brand-menta-dark);
-            border-color: var(--brand-menta-dark);
+        /* 11. Color del 'placeholder' */
+        [data-bs-theme="dark"] .form-control::placeholder {
+            color: #6b7280;
         }
 
-        /* Botón Secundario (Violeta Pastel) */
-        .btn-secondary {
-            background-color: var(--brand-violeta);
-            border-color: var(--brand-violeta);
-            color: #FFFFFF;
-        }
-
-        .btn-secondary:hover {
-            background-color: var(--brand-lila);
-            border-color: var(--brand-lila);
-        }
-
-        /* 6. Formularios */
-        .form-control,
-        .form-select {
-            background-color: var(--bg-main);
-            /* Fondo gris claro */
-            border: 1px solid var(--card-shadow);
-        }
-
-        .form-control:focus,
-        .form-select:focus {
-            background-color: var(--card-bg);
-            border-color: var(--brand-lila);
-            box-shadow: 0 0 0 0.25rem rgba(122, 90, 248, 0.25);
-        }
-
-        /* 7. Links y Colores de Gasto/Ingreso */
-        a {
-            color: var(--brand-lila);
-            text-decoration: none;
-        }
-
-        .gasto {
-            color: #E11D48;
-            /* Rojo Fuerte */
-            font-weight: bold;
-        }
-
-        .ingreso {
-            color: #16A34A;
-            /* Verde Fuerte */
-            font-weight: bold;
+        /* 12. Estilos al hacer clic (focus) */
+        [data-bs-theme="dark"] .form-control:focus,
+        [data-bs-theme="dark"] .form-select:focus {
+            background-color: #1f2937 !important; /* Color de tarjeta */
+            border-color: var(--bs-primary) !important;
+            color: #f9fafb !important;
+            box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25) !important;
         }
     </style>
 
     <title>{% block title %}Spendly{% endblock %}</title>
 </head>
 
-<body>
+<body class="bg-dark text-light">
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark navbar-bordered">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="{% url 'index' %}">Spendly</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
-                aria-label="Toggle navigation">
+    <header
+        class="navbar navbar-expand-md navbar-dark bd-navbar sticky-top bg-dark border-bottom border-secondary-subtle"
+        style="--bs-bg-opacity: 0.8; backdrop-filter: blur(8px);">
+        <nav class="container-xxl flex-wrap flex-md-nowrap" aria-label="Main navigation">
+
+            <a class="navbar-brand p-0 me-4 d-flex align-items-center" href="{% url 'index' %}">
+                <svg fill="var(--bs-primary)" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"
+                    style="width: 24px; height: 24px;">
+                    <path
+                        d="M44 11.2727C44 14.0109 39.8386 16.3957 33.69 17.6364C39.8386 18.877 44 21.2618 44 24C44 26.7382 39.8386 29.123 33.69 30.3636C39.8386 31.6043 44 33.9891 44 36.7273C44 40.7439 35.0457 44 24 44C12.9543 44 4 40.7439 4 36.7273C4 33.9891 8.16144 31.6043 14.31 30.3636C8.16144 29.123 4 26.7382 4 24C4 21.2618 8.16144 18.877 14.31 17.6364C8.16144 16.3957 4 14.0109 4 11.2727C4 7.25611 12.9543 4 24 4C35.0457 4 44 7.25611 44 11.2727Z">
+                    </path>
+                </svg>
+                <span class="ms-2 fs-5 fw-bold" style="color: white;">Spendly</span>
+            </a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#bdNavbar"
+                aria-controls="bdNavbar" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+
+            <div class="collapse navbar-collapse" id="bdNavbar">
                 {% if user.is_authenticated %}
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
+                <ul class="navbar-nav flex-row flex-wrap bd-navbar-nav pt-2 py-md-0 ms-md-auto">
+                    <li class="nav-item col-6 col-md-auto">
                         <a class="nav-link active" href="{% url 'index' %}">Dashboard</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'manage_recurring' %}">Fijos</a>
+                    <li class="nav-item col-6 col-md-auto">
+                        <a class="nav-link" href="#">Transacciones</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'manage_cards' %}">Tarjetas</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'manage_accounts' %}">Cuentas</a>
-                    </li>
-                    <li class="nav-item">
+                    <li class="nav-item col-6 col-md-auto">
                         <a class="nav-link" href="{% url 'manage_budgets' %}">Presupuestos</a>
                     </li>
+                    <li class="nav-item col-6 col-md-auto">
+                        <a class="nav-link" href="#">Informes</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                            Configuración
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-dark">
+                            <li><a class="dropdown-item" href="{% url 'manage_accounts' %}">Cuentas</a></li>
+                            <li><a class="dropdown-item" href="{% url 'manage_cards' %}">Tarjetas</a></li>
+                            <li><a class="dropdown-item" href="{% url 'manage_recurring' %}">Fijos</a></li>
+                        </ul>
+                    </li>
                 </ul>
-                <form action="{% url 'logout' %}" method="post" class="d-flex">
-                    {% csrf_token %}
-                    <button class="btn btn-secondary" type="submit">Cerrar Sesión</button>
-                </form>
 
+                <hr class="d-md-none text-white-50">
+
+                <ul class="navbar-nav flex-row flex-wrap ms-md-3">
+                    <li class="nav-item col-6 col-md-auto">
+                        <button class="btn btn-outline-secondary d-flex align-items-center"
+                            style="--bs-btn-color: var(--bs-gray-400);">
+                            <span class="material-symbols-outlined fs-5">notifications</span>
+                        </button>
+                    </li>
+                    <li class="nav-item col-6 col-md-auto ms-2">
+                        <form action="{% url 'logout' %}" method="post" class="d-flex">
+                            {% csrf_token %}
+                            <button class="btn btn-outline-secondary" type="submit">Cerrar Sesión</button>
+                        </form>
+                    </li>
+                </ul>
                 {% else %}
-                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
+                <ul class="navbar-nav flex-row flex-wrap bd-navbar-nav pt-2 py-md-0 ms-md-auto">
+                    <li class="nav-item col-6 col-md-auto">
                         <a class="nav-link" href="{% url 'login' %}">Login</a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item col-6 col-md-auto">
                         <a class="nav-link" href="{% url 'signup' %}">Registro</a>
                     </li>
                 </ul>
                 {% endif %}
             </div>
-        </div>
-    </nav>
-    <main class="container-fluid main-content">
+        </nav>
+    </header>
+
+    <main class="container-xl my-4 my-lg-5">
         {% block content %}
         {% endblock %}
     </main>
-
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"

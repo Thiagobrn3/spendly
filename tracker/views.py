@@ -30,11 +30,12 @@ class SignUpView(generic.CreateView):
 @login_required
 def index(request):
 
-    # --- LÓGICA DE FILTRO DE FECHAS ---
+    # --- LÓGICA DE FILTRO DE FECHAS (queda igual) ---
     periodo = request.GET.get('periodo', 'este_mes')
     today = datetime.date.today()
     
     if periodo == 'mes_pasado':
+        # ... (lógica de mes_pasado) ...
         first_day_current_month = today.replace(day=1)
         last_day_last_month = first_day_current_month - datetime.timedelta(days=1)
         start_date = last_day_last_month.replace(day=1)
@@ -44,14 +45,14 @@ def index(request):
             'date__gte': start_date,
             'date__lte': end_date
         }
-        
     elif periodo == 'este_ano':
+        # ... (lógica de este_ano) ...
         start_date = today.replace(month=1, day=1)
         date_filter_query = {
             'date__gte': start_date
         }
-    
     else: 
+        # ... (lógica de este_mes) ...
         periodo = 'este_mes'
         start_date = today.replace(day=1)
         date_filter_query = {
@@ -60,81 +61,64 @@ def index(request):
 
     # --- LÓGICA GET ---
 
-    # Instanciamos los formularios vacíos
+    # Instanciamos los formularios (los modals los necesitarán)
     t_form = TransactionForm(user=request.user)
     c_form = CategoryForm()
 
-    # Obtenemos las categorías del usuario
+    # --- QUERIES PRINCIPALES ---
     categories = Category.objects.filter(user=request.user)
-
-    # Obtenemos las tarjetas del usuario
     cards = CreditCard.objects.filter(user=request.user)
-
-    # --- ¡ESTA ES LA LÍNEA QUE FALTABA! ---
-    # Obtenemos las cuentas del usuario
     accounts = Account.objects.filter(user=request.user)
-
-    # Lista de Transacciones (con filtro aplicado)
     transactions = Transaction.objects.filter(
         user=request.user,
         **date_filter_query 
     ).order_by('-date')
 
-    # Total gastado (con filtro aplicado)
-    total_spent = Transaction.objects.filter(
-        user=request.user,
-        type='gasto',
-        **date_filter_query
-    ).aggregate(Sum('amount'))['amount__sum'] or 0.00
+    # --- CÁLCULOS PARA EL DASHBOARD ---
 
-    # Datos del gráfico (con filtro aplicado)
-    expense_data = Transaction.objects.filter(
-        user=request.user,
-        type='gasto',
-        **date_filter_query
-    ).values('category__name').annotate(total=Sum('amount'))
+    # 1. Total Gastado (para el filtro actual)
+    total_spent = transactions.filter(type='gasto').aggregate(Sum('amount'))['amount__sum'] or Decimal('0.00')
 
+    # 2. Total Ganado (para el filtro actual)
+    total_earned = transactions.filter(type='ingreso').aggregate(Sum('amount'))['amount__sum'] or Decimal('0.00')
+    
+    # 3. Balance del período (ej. +$352.40 este mes)
+    net_change = total_earned - total_spent
+
+    # 4. Saldo Total Disponible (Suma de todas las cuentas)
+    total_balance = accounts.aggregate(Sum('balance'))['balance__sum'] or 0.00
+
+    # 5. Datos del Gráfico (basado en total_spent)
+    expense_data = transactions.filter(type='gasto').values('category__name').annotate(total=Sum('amount'))
     chart_labels = []
     chart_data = []
     for item in expense_data:
         label = item['category__name'] if item['category__name'] else 'Sin Categoría'
         chart_labels.append(label)
         chart_data.append(float(item['total']))
-        
-    # --- LÓGICA DE PRESUPUESTOS ---
-    
-    # 1. Obtenemos los presupuestos del usuario
+
+    # 6. Progreso de Presupuestos
     budgets = Budget.objects.filter(user=request.user).select_related('category')
     budgets_progress = []
-
-    # 2. Convertimos los datos de gastos (que ya calculamos para el gráfico)
-    #    en un diccionario para buscar rápido, ej: {'Comida': 15000.00}
     gastos_por_categoria = {
         item['category__name']: item['total'] 
         for item in expense_data 
-        if item['category__name'] # Ignoramos 'Sin Categoría'
+        if item['category__name']
     }
-
-    # 3. Calculamos el progreso para cada presupuesto
     for budget in budgets:
-        # Buscamos cuánto se gastó en esa categoría (0 si no se gastó nada)
         spent = gastos_por_categoria.get(budget.category.name, Decimal('0.00'))
-        
-        # Calculamos el porcentaje
         percentage = 0
         if budget.amount > 0:
             percentage = (spent / budget.amount) * 100
-        
         budgets_progress.append({
             'category_name': budget.category.name,
             'limit': budget.amount,
             'spent': spent,
-            # 'min' es para que la barra no se pase de 100%
             'percentage': min(percentage, 100), 
-            'over_limit': spent > budget.amount, # Para marcar en rojo
+            'over_limit': spent > budget.amount,
         })
+    # --- FIN DE CÁLCULOS ---
 
-    # Preparamos el 'contexto' para enviar al template
     context = {
         't_form': t_form,
         'c_form': c_form,
@@ -146,7 +130,11 @@ def index(request):
         'chart_labels': chart_labels,
         'chart_data': chart_data,
         'selected_periodo': periodo,
-        'budgets_progress': budgets_progress, 
+        'budgets_progress': budgets_progress,
+        
+        # ¡Nuevos valores para el layout!
+        'total_balance': total_balance,
+        'net_change': net_change,
     }
 
     return render(request, 'tracker/index.html', context)
