@@ -26,32 +26,49 @@
 
             /* 2. Colores del modo oscuro */
             --bs-dark: #111827;
-            --bs-body-bg: #111827;
+            --bs-body-bg: #111827;              /* Fondo principal: #111827 */
             --bs-body-color: #9ca3af;
-            --bs-border-color: #374151;
+            --bs-border-color: #374151;          /* Borde de tarjeta/input: #374151 */
             --bs-light: #F9FAFB;
             
             /* 3. Colores de Componentes */
             --bs-card-bg: #1f2937;
             --bs-dark-bg-subtle: #1f2937; /* Fondo de Modal */
-            
-            /* 4. ¡NUEVO! Sobrescribimos las variables de Formulario de Bootstrap */
-            --bs-form-bg: #111827;               /* Fondo del input */
-            --bs-form-border-color: #374151;     /* Borde del input */
-            --bs-form-color: #f9fafb;             /* Color del texto */
         }
 
-        /* 5. Fuente de la referencia */
+        /* ==============================================
+           ¡AQUÍ ESTÁ LA CORRECCIÓN DEFINITIVA!
+           Le decimos a Bootstrap que use nuestros colores
+           para sus componentes de modo oscuro.
+           ==============================================
+        */
+        [data-bs-theme="dark"] {
+            /* * Fondo del Input/Select:
+             * Le decimos que use nuestro fondo de body (#111827)
+             * en lugar de su azul por defecto.
+            */
+            --bs-body-bg-tertiary: var(--bs-body-bg);
+
+            /* * Borde del Input/Select:
+             * Le decimos que use nuestro color de borde.
+            */
+            --bs-border-color: #374151;
+            
+            /* Color del texto del Input/Select */
+            --bs-body-color: #f9fafb;
+        }
+
+        /* 4. Fuente de la referencia */
         body, .btn, .navbar-brand, .nav-link, h1, h2, h3, h4, h5 {
             font-family: 'Inter', sans-serif;
         }
 
-        /* 6. Estilos de Navbar (como antes) */
+        /* 5. Estilos de Navbar (como antes) */
         .navbar-nav .nav-link { font-weight: 500; color: var(--bs-gray-400); }
         .navbar-nav .nav-link.active,
         .navbar-nav .nav-link:hover { color: var(--bs-primary); }
 
-        /* 7. Estilo de Botón Primario (como antes) */
+        /* 6. Estilo de Botón Primario (como antes) */
         .btn-primary {
             --bs-btn-bg: var(--bs-primary);
             --bs-btn-border-color: var(--bs-primary);
@@ -61,40 +78,27 @@
             --bs-btn-font-weight: 700;
         }
         
-        /* 8. Estilo de "gasto" e "ingreso" (como antes) */
+        /* 7. Estilo de "gasto" e "ingreso" (como antes) */
         .gasto { color: #EF4444; font-weight: 600; }
         .ingreso { color: #22C55E; font-weight: 600; }
 
-        /* 9. Iconos Material (como antes) */
+        /* 8. Iconos Material (como antes) */
         .material-symbols-outlined {
           font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24
         }
-        
-        /* ==============================================
-           ¡REGLAS DE FORMULARIO REFORZADAS!
-           ==============================================
-        */
-        
-        /* 10. Forzamos el estilo de inputs y selects */
-        [data-bs-theme="dark"] .form-control,
-        [data-bs-theme="dark"] .form-select {
-            background-color: var(--bs-form-bg) !important;
-            border-color: var(--bs-form-border-color) !important;
-            color: var(--bs-form-color) !important;
-        }
 
-        /* 11. Color del 'placeholder' */
+        /* 9. Color del 'placeholder' */
         [data-bs-theme="dark"] .form-control::placeholder {
             color: #6b7280;
         }
 
-        /* 12. Estilos al hacer clic (focus) */
+        /* 10. Estilos al hacer clic (focus) */
         [data-bs-theme="dark"] .form-control:focus,
         [data-bs-theme="dark"] .form-select:focus {
-            background-color: #1f2937 !important; /* Color de tarjeta */
-            border-color: var(--bs-primary) !important;
-            color: #f9fafb !important;
-            box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25) !important;
+            background-color: #1f2937; /* Color de tarjeta */
+            border-color: var(--bs-primary);
+            color: #f9fafb;
+            box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
         }
     </style>
 
