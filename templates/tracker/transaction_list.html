@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Todas las Transacciones - Spendly{% endblock %}
+
+{% block content %}
+    <h1 class="h2 fw-bold text-white mb-1">Todas las Transacciones</h1>
+    <p class="text-body-secondary mb-4">
+        Aquí está el historial completo de todos tus movimientos.
+    </p>
+
+    <div class="card bg-dark border-secondary-subtle shadow-sm rounded-4">
+        <div class="card-body p-4 p-lg-5">
+            
+            <ul class="list-group list-group-flush">
+                {% for t in transactions %}
+                <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent border-secondary-subtle px-0 py-3">
+                    <div class="d-flex align-items-center">
+                        <div class="d-flex align-items-center justify-content-center rounded-circle me-3" style="width: 40px; height: 40px; background-color: rgba(var(--bs-primary-rgb), 0.1);">
+                            <span class="material-symbols-outlined fs-5 text-primary">
+                                {% if t.type == 'gasto' %}restaurant{% else %}paid{% endif %}
+                            </span>
+                        </div>
+                        <div>
+                            <h5 class="h6 fw-semibold text-white mb-0">{{ t.description }}</h5>
+                            <small class="text-body-secondary">{{ t.date|date:"d M, Y" }} - {{ t.cuenta.name }}</small>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="fw-semibold {% if t.type == 'gasto' %}gasto{% else %}ingreso{% endif %}" style="min-width: 80px; text-align: right;">
+                            {% if t.type == 'gasto' %}-{% else %}+{% endif %}${{ t.amount|floatformat:2 }}
+                        </span>
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'transaction_update' t.pk %}" class="btn btn-sm btn-outline-secondary d-flex align-items-center p-1" title="Editar">
+                                <span class="material-symbols-outlined fs-6">edit</span>
+                            </a>
+                            <form action="{% url 'transaction_delete' t.pk %}" method="post" onsubmit="return confirm('¿Estás seguro de que querés eliminar esta transacción?');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger d-flex align-items-center p-1" title="Eliminar">
+                                    <span class="material-symbols-outlined fs-6">delete</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </li>
+                {% empty %}
+                <li class="list-group-item bg-transparent border-secondary-subtle px-0 py-3">
+                    <p class="text-body-secondary mb-0">No tenés ninguna transacción registrada.</p>
+                </li>
+                {% endfor %}
+            </ul>
+            </div>
+    </div>
+{% endblock %}

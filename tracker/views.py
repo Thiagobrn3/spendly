@@ -141,7 +141,20 @@ def index(request):
     }
 
     return render(request, 'tracker/index.html', context)
+# --- Lista de transacciones ---
+@login_required
+def transaction_list(request):
+    # Obtenemos todas las transacciones del usuario
+    # Usamos select_related para optimizar y traer los datos de
+    # categoría y cuenta en la misma consulta
+    transactions = Transaction.objects.filter(
+        user=request.user
+    ).select_related('category', 'cuenta').order_by('-date')
 
+    context = {
+        'transactions': transactions
+    }
+    return render(request, 'tracker/transaction_list.html', context)
 # --- Agregar Transacción ---
 @login_required
 @require_POST 

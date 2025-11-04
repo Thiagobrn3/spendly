@@ -4,7 +4,8 @@ from . import views
 urlpatterns = [
     # Dashboard
     path('', views.index, name='index'), 
-
+    # --- URL de lista de transacciones ---
+    path('transactions/', views.transaction_list, name='transaction_list'),
     # --- URLs de Transacciones ---
     path('transaction/add/', views.add_transaction, name='add_transaction'),
     path('category/add/', views.add_category, name='add_category'),
