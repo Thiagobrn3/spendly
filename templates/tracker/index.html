@@ -1,22 +1,25 @@
-{% extends "base.html" %}
-{% load crispy_forms_tags %}
+{% extends "base.html" %}  {# Hereda la plantilla base general del sitio #}
+{% load crispy_forms_tags %}  {# Carga la librería de crispy forms para renderizar formularios #}
 
-{% block title %}Dashboard - Spendly{% endblock %}
+{% block title %}Dashboard - Spendly{% endblock %}  {# Título de la pestaña del navegador #}
 
 {% block content %}
 
+<!-- ================= CABECERA DE BIENVENIDA Y BOTONES ================= -->
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
     <div class="flex-fill">
-        <h1 class="h2 fw-bold text-white mb-0">¡Bienvenido, {{ user.username }}!</h1>
+        <h1 class="h2 fw-bold text-white mb-0">¡Bienvenido, {{ user.username }}!</h1>  <!-- Saludo al usuario -->
         <p class="text-body-secondary mb-0">Aquí tienes un resumen de tu salud financiera.</p>
     </div>
     
     <div class="d-flex gap-2">
+        <!-- Botón para abrir el modal de nueva categoría -->
         <button type="button" class="btn btn-outline-secondary d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#categoryModal">
             <span class="material-symbols-outlined me-2 fs-6">sell</span>
             <span>Nueva Categoría</span>
         </button>
 
+        <!-- Botón para abrir el modal de nueva transacción -->
         <button type="button" class="btn btn-primary d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#transactionModal">
             <span class="material-symbols-outlined me-2 fs-6">add_circle</span>
             <span>Añadir Transacción</span>
@@ -24,16 +27,19 @@
     </div>
 </div>
 
-
+<!-- ================= CONTENEDOR PRINCIPAL ================= -->
 <div class="row g-4 g-lg-5">
 
+    <!-- ======== COLUMNA IZQUIERDA (resumen financiero, cuentas, tarjetas, movimientos) ======== -->
     <div class="col-lg-8">
         <div class="d-flex flex-column gap-4 gap-lg-5">
 
+            <!-- CARD: Saldo total disponible -->
             <div class="card bg-dark border-secondary-subtle shadow-sm rounded-4">
                 <div class="card-body p-4 p-lg-5">
                     <p class="text-body-secondary mb-2">Saldo Total Disponible</p>
                     <h2 class="h1 fw-bold text-white mb-1">${{ total_balance|floatformat:2 }}</h2>
+                    <!-- Muestra cambio neto (positivo o negativo) según el período seleccionado -->
                     <p class="mb-0 {% if net_change >= 0 %}ingreso{% else %}gasto{% endif %} d-flex align-items-center fw-medium">
                         <span class="material-symbols-outlined fs-6 me-1">
                             {% if net_change >= 0 %}arrow_upward{% else %}arrow_downward{% endif %}
@@ -43,17 +49,17 @@
                 </div>
             </div>
 
+            <!-- SECCIÓN: Cuentas -->
             <div>
                 <h3 class="h4 fw-bold text-white mb-3">Cuentas</h3>
                 <div class="row row-cols-1 row-cols-md-3 g-4">
-                    
                     {% for account in accounts %}
                     <div class="col">
                         <div class="card h-100 bg-dark border-secondary-subtle shadow-sm rounded-4">
                             <div class="card-body d-flex flex-column p-4">
+                                <!-- Icono y nombre de cuenta -->
                                 <div class="d-flex align-items-center mb-3">
                                     <div class="d-flex align-items-center justify-content-center rounded-circle me-3" style="width: 40px; height: 40px; background-color: rgba(var(--bs-primary-rgb), 0.2);">
-                                        
                                         <span class="material-symbols-outlined fs-5" style="color: var(--bs-primary);">
                                             {% if 'banco' in account.name|lower %}
                                                 account_balance
@@ -67,27 +73,29 @@
                                         <small class="text-body-secondary">Saldo</small>
                                     </div>
                                 </div>
+                                <!-- Saldo actual -->
                                 <h4 class="h3 fw-bold text-white mt-auto mb-0">${{ account.balance|floatformat:2 }}</h4>
                             </div>
                         </div>
                     </div>
                     {% empty %}
+                    <!-- Si no hay cuentas -->
                     <div class="col-12">
                         <p class="text-body-secondary">No tenés cuentas. <a href="{% url 'manage_accounts' %}">Agregá una</a>.</p>
                     </div>
                     {% endfor %}
-
                 </div>
             </div>
 
+            <!-- SECCIÓN: Tarjetas de crédito -->
             <div>
                 <h3 class="h4 fw-bold text-white mb-3">Tarjetas de Crédito</h3>
                 <div class="row row-cols-1 row-cols-md-3 g-4">
-                    
                     {% for card in cards %}
                     <div class="col">
                         <div class="card h-100 bg-dark border-secondary-subtle shadow-sm rounded-4">
                             <div class="card-body d-flex flex-column p-4">
+                                <!-- Icono de tarjeta y nombre -->
                                 <div class="d-flex align-items-center mb-3">
                                     <div class="d-flex align-items-center justify-content-center rounded-circle me-3" style="width: 40px; height: 40px; background-color: rgba(var(--bs-primary-rgb), 0.2);">
                                         <span class="material-symbols-outlined fs-5" style="color: var(--bs-primary);">
@@ -99,40 +107,41 @@
                                         <small class="text-body-secondary">Monto a Pagar</small>
                                     </div>
                                 </div>
+                                <!-- Deuda actual -->
                                 <h4 class="h3 fw-bold gasto mt-auto mb-0">${{ card.get_balance_due|floatformat:2 }}</h4>
                             </div>
                         </div>
                     </div>
                     {% empty %}
+                    <!-- Si no hay tarjetas -->
                     <div class="col-12">
                         <p class="text-body-secondary">No tenés tarjetas. <a href="{% url 'manage_cards' %}">Agregá una</a>.</p>
                     </div>
                     {% endfor %}
                 </div>
             </div>
+
+            <!-- SECCIÓN: Movimientos recientes -->
             <div class="card bg-dark border-secondary-subtle shadow-sm rounded-4">
                 <div class="card-body p-4 p-lg-5">
                     
+                    <!-- Encabezado con selector de período -->
                     <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
                         <h3 class="h4 fw-bold text-white mb-0">Movimientos Recientes</h3>
                         <form method="GET" action="{% url 'index' %}">
                             <select class="form-select form-select-sm bg-dark text-white border-secondary-subtle" name="periodo" style="width: auto;" onchange="this.form.submit();">
-                                <option value="este_mes" {% if selected_periodo == 'este_mes' %}selected{% endif %}>
-                                    Este mes
-                                </option>
-                                <option value="mes_pasado" {% if selected_periodo == 'mes_pasado' %}selected{% endif %}>
-                                    Mes pasado
-                                </option>
-                                <option value="este_ano" {% if selected_periodo == 'este_ano' %}selected{% endif %}>
-                                    Este año
-                                </option>
+                                <option value="este_mes" {% if selected_periodo == 'este_mes' %}selected{% endif %}>Este mes</option>
+                                <option value="mes_pasado" {% if selected_periodo == 'mes_pasado' %}selected{% endif %}>Mes pasado</option>
+                                <option value="este_ano" {% if selected_periodo == 'este_ano' %}selected{% endif %}>Este año</option>
                             </select>
                         </form>
                     </div>
 
+                    <!-- Lista de transacciones -->
                     <ul class="list-group list-group-flush">
                         {% for t in transactions|slice:":5" %}
                         <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent border-secondary-subtle px-0 py-3">
+                            <!-- Información de la transacción -->
                             <div class="d-flex align-items-center">
                                 <div class="d-flex align-items-center justify-content-center rounded-circle me-3" style="width: 40px; height: 40px; background-color: rgba(var(--bs-primary-rgb), 0.1);">
                                     <span class="material-symbols-outlined fs-5 text-primary">
@@ -145,14 +154,17 @@
                                 </div>
                             </div>
                             
+                            <!-- Monto y acciones -->
                             <div class="d-flex align-items-center gap-3">
                                 <span class="fw-semibold {% if t.type == 'gasto' %}gasto{% else %}ingreso{% endif %}" style="min-width: 80px; text-align: right;">
                                     {% if t.type == 'gasto' %}-{% else %}+{% endif %}${{ t.amount|floatformat:2 }}
                                 </span>
                                 <div class="d-flex gap-2">
+                                    <!-- Botón editar -->
                                     <a href="{% url 'transaction_update' t.pk %}" class="btn btn-sm btn-outline-secondary d-flex align-items-center p-1" title="Editar">
                                         <span class="material-symbols-outlined fs-6">edit</span>
                                     </a>
+                                    <!-- Botón eliminar -->
                                     <form action="{% url 'transaction_delete' t.pk %}" method="post" onsubmit="return confirm('¿Estás seguro de que querés eliminar esta transacción?');">
                                         {% csrf_token %}
                                         <button type="submit" class="btn btn-sm btn-outline-danger d-flex align-items-center p-1" title="Eliminar">
@@ -163,11 +175,14 @@
                             </div>
                         </li>
                         {% empty %}
+                        <!-- Si no hay transacciones -->
                         <li class="list-group-item bg-transparent border-secondary-subtle px-0 py-3">
                             <p class="text-body-secondary mb-0">Aún no tenés transacciones en este período.</p>
                         </li>
                         {% endfor %}
                     </ul>
+
+                    <!-- Enlace para ver todas las transacciones -->
                     <div class="text-center mt-3">
                         <a href="{% url 'transaction_list' %}" class="btn btn-link text-primary fw-semibold">Ver todas las transacciones</a>
                     </div>
@@ -176,15 +191,19 @@
 
         </div>
     </div>
+
+    <!-- ======== COLUMNA DERECHA (presupuestos + gráfico) ======== -->
     <div class="col-lg-4">
         <div class="d-flex flex-column gap-4 gap-lg-5">
 
+            <!-- CARD: Progreso de presupuestos -->
             <div class="card bg-dark border-secondary-subtle shadow-sm rounded-4">
                 <div class="card-body p-4 p-lg-5">
                     <h3 class="h4 fw-bold text-white mb-4">Progreso de Presupuestos</h3>
                     <div class="d-flex flex-column gap-4">
                         {% for budget in budgets_progress %}
                         <div>
+                            <!-- Nombre y valores -->
                             <div class="d-flex justify-content-between mb-1">
                                 <span class="fw-medium text-white-50">{{ budget.category_name }}</span>
                                 <span class="text-body-secondary">
@@ -192,6 +211,7 @@
                                     / ${{ budget.limit|floatformat:2 }}
                                 </span>
                             </div>
+                            <!-- Barra de progreso -->
                             <div class="progress" role="progressbar" style="height: 8px;">
                                 <div class="progress-bar {% if budget.over_limit %}bg-danger{% else %}bg-primary{% endif %}" 
                                      style="width: {{ budget.percentage|floatformat:0 }}%">
@@ -205,23 +225,29 @@
                 </div>
             </div>
 
+            <!-- CARD: Gráfico de gastos -->
             <div class="card bg-dark border-secondary-subtle shadow-sm rounded-4">
                 <div class="card-body p-4 p-lg-5">
                     <h3 class="h4 fw-bold text-white mb-4">Gráfico de Gastos</h3>
+                    <!-- Contenedor del gráfico -->
                     <div class="mb-4" style="position: relative; height: 250px;">
                         <canvas id="myPieChart"></canvas>
+                        <!-- Texto central del gráfico -->
                         <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
                             <span class="text-body-secondary d-block">Total Gastado</span>
                             <span class="h4 fw-bold text-white">${{ total_spent|floatformat:2 }}</span>
                         </div>
                     </div>
+                    <!-- Contenedor donde se genera la leyenda del gráfico -->
                     <div id="chart-legend" class="d-flex flex-column gap-2"></div>
                 </div>
             </div>
 
         </div>
     </div>
-    </div>
+</div>
+
+<!-- ================= MODAL: Añadir transacción ================= -->
 <div class="modal fade" id="transactionModal" tabindex="-1" aria-labelledby="transactionModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-secondary-subtle">
@@ -232,7 +258,7 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    {{ t_form|crispy }}
+                    {{ t_form|crispy }}  <!-- Formulario de transacción -->
                 </div>
                 <div class="modal-footer border-secondary-subtle">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -243,6 +269,7 @@
     </div>
 </div>
 
+<!-- ================= MODAL: Crear nueva categoría ================= -->
 <div class="modal fade" id="categoryModal" tabindex="-1" aria-labelledby="categoryModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-secondary-subtle">
@@ -253,7 +280,7 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    {{ c_form|crispy }}
+                    {{ c_form|crispy }}  <!-- Formulario de categoría -->
                 </div>
                 <div class="modal-footer border-secondary-subtle">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -263,35 +290,37 @@
         </div>
     </div>
 </div>
+
+<!-- ================= SCRIPTS DEL GRÁFICO ================= -->
 {{ chart_labels|json_script:"chart-labels" }}
 {{ chart_data|json_script:"chart-data" }}
 <script>
-    const ctx = document.getElementById('myPieChart').getContext('d');
+    const ctx = document.getElementById('myPieChart').getContext('2d');  // Inicializa contexto del gráfico
     const chartLabels = JSON.parse(document.getElementById('chart-labels').textContent);
     const chartData = JSON.parse(document.getElementById('chart-data').textContent);
     
+    // Colores predefinidos para el gráfico
     const chartColors = ['#22C55E', '#3B82F6', '#A855F7', '#EAB308', '#F97316', '#EF4444'];
 
+    // Crea el gráfico tipo doughnut
     new Chart(ctx, {
-        type: 'doughnut', 
+        type: 'doughnut',
         data: {
             labels: chartLabels,
             datasets: [{
                 label: 'Gastos',
                 data: chartData,
                 backgroundColor: chartColors,
-                borderColor: '#111827', 
+                borderColor: '#111827',
                 borderWidth: 4,
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            cutout: '70%', 
+            cutout: '70%',
             plugins: {
-                legend: {
-                    display: false, 
-                },
+                legend: { display: false },
                 tooltip: {
                     backgroundColor: '#1f2937',
                     titleColor: '#fff',
@@ -303,20 +332,17 @@
         }
     });
 
-    // Generar leyenda HTML personalizada
+    // Genera la leyenda HTML del gráfico
     const legendContainer = document.getElementById('chart-legend');
-    
-    // ===== CORRECCIÓN DE SINTAXIS AQUÍ =====
     const totalSpentForJS = parseFloat({{ total_spent|floatformat:2|default:"1" }});
 
     chartLabels.forEach((label, index) => {
         const value = chartData[index];
-        
         let percent = 0;
         if (totalSpentForJS > 0) {
             percent = (value / totalSpentForJS) * 100;
         }
-        
+        // Agrega cada categoría con color, monto y porcentaje
         const item = `
             <div class="d-flex align-items-center justify-content-between">
                 <div class="d-flex align-items-center gap-2">
@@ -330,4 +356,5 @@
     });
 
 </script>
+
 {% endblock %}

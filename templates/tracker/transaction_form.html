@@ -4,21 +4,37 @@
 {% block title %}Editar Movimiento - Spendly{% endblock %}
 
 {% block content %}
+
+<!-- Contenedor principal centrado -->
 <div class="row justify-content-center">
     <div class="col-lg-8">
+        <!-- Tarjeta contenedora del formulario -->
         <div class="card bg-dark border-secondary-subtle shadow-sm rounded-4">
             <div class="card-body p-4 p-lg-5">
+
+                <!-- Título de la sección -->
                 <h2 class="h3 fw-bold text-white mb-4">Editar Movimiento</h2>
+
+                <!-- Formulario de edición de transacción -->
                 <form method="post">
                     {% csrf_token %}
+
+                    <!-- Renderizado automático del formulario con Crispy Forms -->
                     {{ form|crispy }}
+
+                    <!-- Botones de acción -->
                     <div class="d-flex justify-content-end gap-2 mt-4">
+                        <!-- Botón para volver sin guardar -->
                         <a href="{% url 'index' %}" class="btn btn-outline-secondary">Cancelar</a>
+
+                        <!-- Botón para confirmar y guardar cambios -->
                         <button type="submit" class="btn btn-primary">Guardar Cambios</button>
                     </div>
                 </form>
+
             </div>
         </div>
     </div>
 </div>
+
 {% endblock %}

@@ -1,89 +1,40 @@
 {% extends "base.html" %}
+{% load crispy_forms_tags %}
 
-{% block title %}Informes - Spendly{% endblock %}
+{% block title %}Añadir Movimiento - Spendly{% endblock %}
 
 {% block content %}
-    <h1 class="h2 fw-bold text-white mb-1">Informes</h1>
-    <p class="text-body-secondary mb-4">
-        Analizá tus finanzas con gráficos detallados.
-    </p>
 
-    <div class="card bg-dark border-secondary-subtle shadow-sm rounded-4">
-        <div class="card-body p-4 p-lg-5">
-            <h3 class="h4 fw-bold text-white mb-4">Ingresos vs. Gastos (Año Actual)</h3>
-            <div style="height: 400px;">
-                <canvas id="barChart"></canvas>
+<!-- Contenedor principal centrado en la pantalla -->
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <!-- Tarjeta oscura con borde sutil que contiene el formulario -->
+        <div class="card bg-dark border-secondary-subtle shadow-sm rounded-4">
+            <div class="card-body p-4 p-lg-5">
+
+                <!-- Título del formulario -->
+                <h2 class="h3 fw-bold text-white mb-4">Añadir Movimiento</h2>
+
+                <!-- Formulario para registrar un nuevo gasto o ingreso -->
+                <form method="post">
+                    {% csrf_token %}
+
+                    <!-- Renderiza automáticamente todos los campos definidos en el formulario Django -->
+                    {{ form|crispy }}
+
+                    <!-- Botones de acción alineados a la derecha -->
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <!-- Enlace para volver al dashboard sin guardar -->
+                        <a href="{% url 'index' %}" class="btn btn-outline-secondary">Cancelar</a>
+
+                        <!-- Botón principal para guardar la nueva transacción -->
+                        <button type="submit" class="btn btn-primary">Guardar</button>
+                    </div>
+                </form>
+
             </div>
         </div>
     </div>
+</div>
 
-    {{ chart_labels|json_script:"chart-labels" }}
-{{ chart_ingresos|json_script:"chart-ingresos" }}
-{{ chart_gastos|json_script:"chart-gastos" }}
-<script>
-    const ctx = document.getElementById('barChart').getContext('2d');
-    
-    // Obtenemos los datos de Django
-    const labels = JSON.parse(document.getElementById('chart-labels').textContent);
-    const ingresosData = JSON.parse(document.getElementById('chart-ingresos').textContent);
-    const gastosData = JSON.parse(document.getElementById('chart-gastos').textContent);
-    
-    // Colores (verde para ingreso, rojo para gasto)
-    const ingresoColor = 'rgba(34, 197, 94, 0.7)';
-    const gastoColor = 'rgba(239, 68, 68, 0.7)';
-    
-    const gridColor = '#374151';
-    const textColor = '#9ca3af';
-    const legendColor = '#f9fafb';
-
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [
-                {
-                    label: 'Ingresos',
-                    data: ingresosData,
-                    backgroundColor: ingresoColor,
-                    borderColor: ingresoColor,
-                    borderWidth: 1
-                },
-                {
-                    label: 'Gastos',
-                    data: gastosData,
-                    backgroundColor: gastoColor,
-                    borderColor: gastoColor,
-                    borderWidth: 1
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    labels: { color: legendColor } // Color del texto de la leyenda
-                },
-                tooltip: {
-                    backgroundColor: '#1f2937',
-                    titleColor: '#fff',
-                    bodyColor: '#fff',
-                    borderColor: '#374151',
-                    borderWidth: 1,
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: { color: textColor }, // Color de los números del eje Y
-                    grid: { color: gridColor }  // Color de las líneas de la grilla
-                },
-                x: {
-                    ticks: { color: textColor }, // Color de los meses (eje X)
-                    grid: { display: false }
-                }
-            }
-        }
-    });
-</script>
 {% endblock %}

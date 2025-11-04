@@ -4,59 +4,85 @@
 {% block title %}Administrar Presupuestos - Spendly{% endblock %}
 
 {% block content %}
-    <h1 class="h2 fw-bold text-white mb-1">Administrar Presupuestos</h1>
-    <p class="text-body-secondary mb-4">
-        Establecé tus límites de gasto mensuales por categoría.
-    </s'p>
+<!-- Título principal de la página -->
+<h1 class="h2 fw-bold text-white mb-1">Administrar Presupuestos</h1>
 
-    {% if messages %}
-        {% for message in messages %}
-        <div class="alert alert-danger" role="alert">
-            {{ message }}
-        </div>
-        {% endfor %}
-    {% endif %}
+<!-- Descripción o instrucción breve debajo del título -->
+<p class="text-body-secondary mb-4">
+    Establecé tus límites de gasto mensuales por categoría.
+</p> <!-- NOTA: en tu código original había un pequeño error de tipeo aquí: "</s'p>" -->
 
-    <div class="row g-4 g-lg-5">
-        <div class="col-lg-5">
-            <div class="card bg-dark border-secondary-subtle shadow-sm rounded-4">
-                <div class="card-body p-4 p-lg-5">
-                    <h3 class="h4 fw-bold text-white mb-4">Agregar Presupuesto</h3>
-                    <form method="post">
-                        {% csrf_token %}
-                        {{ form|crispy }}
-                        <button type="submit" class="btn btn-primary mt-3">Guardar</button>
-                    </form>
-                </div>
-            </div>
-        </div>
+<!-- Bloque para mostrar mensajes (por ejemplo, errores de validación o avisos del sistema) -->
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-danger" role="alert">
+    {{ message }}
+</div>
+{% endfor %}
+{% endif %}
 
-        <div class="col-lg-7">
-            <div class="card bg-dark border-secondary-subtle shadow-sm rounded-4">
-                <div class="card-body p-4 p-lg-5">
-                    <h3 class="h4 fw-bold text-white mb-4">Mis Presupuestos</h3>
-                    <ul class="list-group list-group-flush">
-                        {% for budget in budgets %}
-                        <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent border-secondary-subtle px-0 py-3">
-                            <div>
-                                <h5 class="h6 fw-semibold text-white mb-0">{{ budget.category.name }}</h5>
-                                <div class="gasto fw-medium">Límite: ${{ budget.amount|floatformat:2 }}</div>
-                            </div>
-                            <form action="{% url 'delete_budget' budget.pk %}" method="post" onsubmit="return confirm('¿Estás seguro de que querés eliminar el presupuesto para \'{{ budget.category.name }}\'?');">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-sm btn-outline-danger d-flex align-items-center" title="Eliminar">
-                                    <span class="material-symbols-outlined fs-6">delete</span>
-                                </button>
-                            </form>
-                        </li>
-                        {% empty %}
-                        <li class="list-group-item bg-transparent border-secondary-subtle px-0 py-3">
-                            <p class="text-body-secondary mb-0">No tenés presupuestos definidos.</p>
-                        </li>
-                        {% endfor %}
-                    </ul>
-                </div>
+<!-- Contenedor principal dividido en dos columnas -->
+<div class="row g-4 g-lg-5">
+
+    <!-- COLUMNA IZQUIERDA: Formulario para crear un nuevo presupuesto -->
+    <div class="col-lg-5">
+        <div class="card bg-dark border-secondary-subtle shadow-sm rounded-4">
+            <div class="card-body p-4 p-lg-5">
+                <!-- Título del formulario -->
+                <h3 class="h4 fw-bold text-white mb-4">Agregar Presupuesto</h3>
+
+                <!-- Formulario de carga de presupuesto -->
+                <form method="post">
+                    {% csrf_token %}
+                    <!-- Crispy Forms se encarga de renderizar el formulario con los estilos de Bootstrap -->
+                    {{ form|crispy }}
+                    <button type="submit" class="btn btn-primary mt-3">Guardar</button>
+                </form>
             </div>
         </div>
     </div>
+
+    <!-- COLUMNA DERECHA: Lista de presupuestos ya guardados -->
+    <div class="col-lg-7">
+        <div class="card bg-dark border-secondary-subtle shadow-sm rounded-4">
+            <div class="card-body p-4 p-lg-5">
+                <!-- Título de la lista -->
+                <h3 class="h4 fw-bold text-white mb-4">Mis Presupuestos</h3>
+
+                <!-- Lista de presupuestos definidos -->
+                <ul class="list-group list-group-flush">
+                    {% for budget in budgets %}
+                    <!-- Cada presupuesto aparece como un ítem de lista -->
+                    <li
+                        class="list-group-item d-flex justify-content-between align-items-center bg-transparent border-secondary-subtle px-0 py-3">
+                        <div>
+                            <!-- Nombre de la categoría asociada al presupuesto -->
+                            <h5 class="h6 fw-semibold text-white mb-0">{{ budget.category.name }}</h5>
+
+                            <!-- Monto límite de gasto -->
+                            <div class="gasto fw-medium">Límite: ${{ budget.amount|floatformat:2 }}</div>
+                        </div>
+
+                        <!-- Botón de eliminar presupuesto -->
+                        <form action="{% url 'delete_budget' budget.pk %}" method="post"
+                            onsubmit="return confirm('¿Estás seguro de que querés eliminar el presupuesto para \'{{ budget.category.name }}\'?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-danger d-flex align-items-center"
+                                title="Eliminar">
+                                <span class="material-symbols-outlined fs-6">delete</span>
+                            </button>
+                        </form>
+                    </li>
+
+                    <!-- Si no hay presupuestos, se muestra este mensaje -->
+                    {% empty %}
+                    <li class="list-group-item bg-transparent border-secondary-subtle px-0 py-3">
+                        <p class="text-body-secondary mb-0">No tenés presupuestos definidos.</p>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

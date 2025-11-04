@@ -4,60 +4,94 @@
 {% block title %}Ingresos/Gastos Fijos - Spendly{% endblock %}
 
 {% block content %}
-    <h1 class="h2 fw-bold text-white mb-1">Administrar Ingresos/Gastos Fijos</h1>
-    <p class="text-body-secondary mb-4">
-        Registrá aquí tus gastos o ingresos que se repiten (ej. Alquiler, Sueldo, Netflix).
-    </p>
+<!-- Título principal de la página -->
+<h1 class="h2 fw-bold text-white mb-1">Administrar Ingresos/Gastos Fijos</h1>
 
-    {% if messages %}
-        {% for message in messages %}
-        <div class="alert alert-danger" role="alert">
-            {{ message }}
-        </div>
-        {% endfor %}
-    {% endif %}
+<!-- Descripción breve debajo del título -->
+<p class="text-body-secondary mb-4">
+    Registrá aquí tus gastos o ingresos que se repiten (ej. Alquiler, Sueldo, Netflix).
+</p>
 
-    <div class="row g-4 g-lg-5">
-        <div class="col-lg-5">
-            <div class="card bg-dark border-secondary-subtle shadow-sm rounded-4">
-                <div class="card-body p-4 p-lg-5">
-                    <h3 class="h4 fw-bold text-white mb-4">Agregar Nuevo</h3>
-                    <form method="post">
-                        {% csrf_token %}
-                        {{ form|crispy }}
-                        <button type="submit" class="btn btn-primary mt-3">Guardar</button>
-                    </form>
-                </div>
-            </div>
-        </div>
+<!-- Bloque para mostrar mensajes del sistema (por ejemplo, errores o alertas de validación) -->
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-danger" role="alert">
+    {{ message }}
+</div>
+{% endfor %}
+{% endif %}
 
-        <div class="col-lg-7">
-            <div class="card bg-dark border-secondary-subtle shadow-sm rounded-4">
-                <div class="card-body p-4 p-lg-5">
-                    <h3 class="h4 fw-bold text-white mb-4">Mis Fijos</h3>
-                    <ul class="list-group list-group-flush">
-                        {% for item in items %}
-                        <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent border-secondary-subtle px-0 py-3">
-                            <div>
-                                <h5 class="h6 fw-semibold text-white mb-0">{{ item.description }}</h5>
-                                <small class="text-body-secondary">{{ item.get_frequency_display }} {% if item.category %}({{ item.category.name }}){% endif %}</small>
-                                <div class="{% if item.type == 'gasto' %}gasto{% else %}ingreso{% endif %} fw-medium">${{ item.amount }}</div>
-                            </div>
-                            <form action="{% url 'delete_recurring' item.pk %}" method="post" onsubmit="return confirm('¿Estás seguro de que querés eliminar \'{{ item.description }}\'?');">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-sm btn-outline-danger d-flex align-items-center" title="Eliminar">
-                                    <span class="material-symbols-outlined fs-6">delete</span>
-                                </button>
-                            </form>
-                        </li>
-                        {% empty %}
-                        <li class="list-group-item bg-transparent border-secondary-subtle px-0 py-3">
-                            <p class="text-body-secondary mb-0">No tenés items recurrentes.</p>
-                        </li>
-                        {% endfor %}
-                    </ul>
-                </div>
+<!-- Contenedor principal dividido en dos columnas -->
+<div class="row g-4 g-lg-5">
+
+    <!-- Columna izquierda: formulario para agregar un nuevo ingreso o gasto fijo -->
+    <div class="col-lg-5">
+        <div class="card bg-dark border-secondary-subtle shadow-sm rounded-4">
+            <div class="card-body p-4 p-lg-5">
+                <!-- Título del formulario -->
+                <h3 class="h4 fw-bold text-white mb-4">Agregar Nuevo</h3>
+
+                <!-- Formulario de creación -->
+                <form method="post">
+                    {% csrf_token %}
+                    <!-- Renderiza el formulario usando crispy forms para mejor diseño -->
+                    {{ form|crispy }}
+                    <!-- Botón para enviar el formulario -->
+                    <button type="submit" class="btn btn-primary mt-3">Guardar</button>
+                </form>
             </div>
         </div>
     </div>
+
+    <!-- Columna derecha: lista de ingresos/gastos fijos ya registrados -->
+    <div class="col-lg-7">
+        <div class="card bg-dark border-secondary-subtle shadow-sm rounded-4">
+            <div class="card-body p-4 p-lg-5">
+                <!-- Título de la lista -->
+                <h3 class="h4 fw-bold text-white mb-4">Mis Fijos</h3>
+
+                <!-- Lista de items existentes -->
+                <ul class="list-group list-group-flush">
+                    {% for item in items %}
+                    <!-- Cada item representa un ingreso o gasto fijo -->
+                    <li
+                        class="list-group-item d-flex justify-content-between align-items-center bg-transparent border-secondary-subtle px-0 py-3">
+                        <div>
+                            <!-- Descripción del ítem -->
+                            <h5 class="h6 fw-semibold text-white mb-0">{{ item.description }}</h5>
+
+                            <!-- Frecuencia y categoría (si existe) -->
+                            <small class="text-body-secondary">
+                                {{ item.get_frequency_display }}
+                                {% if item.category %}({{ item.category.name }}){% endif %}
+                            </small>
+
+                            <!-- Monto, cambia el color o estilo según si es gasto o ingreso -->
+                            <div class="{% if item.type == 'gasto' %}gasto{% else %}ingreso{% endif %} fw-medium">
+                                ${{ item.amount }}
+                            </div>
+                        </div>
+
+                        <!-- Botón para eliminar el ítem -->
+                        <form action="{% url 'delete_recurring' item.pk %}" method="post"
+                            onsubmit="return confirm('¿Estás seguro de que querés eliminar \'{{ item.description }}\'?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-danger d-flex align-items-center"
+                                title="Eliminar">
+                                <span class="material-symbols-outlined fs-6">delete</span>
+                            </button>
+                        </form>
+                    </li>
+
+                    <!-- Si no hay ítems, muestra un mensaje informativo -->
+                    {% empty %}
+                    <li class="list-group-item bg-transparent border-secondary-subtle px-0 py-3">
+                        <p class="text-body-secondary mb-0">No tenés items recurrentes.</p>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

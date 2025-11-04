@@ -1,24 +1,60 @@
 {% extends "base.html" %}
+<!--Esta línea indica que este archivo hereda la estructura base definida en "base.html".
+Esto permite reutilizar el encabezado, el footer y los estilos comunes del sitio. #}-->
+
 {% load crispy_forms_tags %}
+<!--Carga las etiquetas (tags) de la librería "crispy_forms" para poder renderizar formularios
+de Django con un estilo más limpio y adaptado a Bootstrap.-->
 
 {% block title %}Registro - Spendly{% endblock %}
+<!--Define el título de la página que se mostrará en la pestaña del navegador.
+Está dentro del bloque "title" del template base.-->
 
 {% block content %}
+<!--Comienza el bloque de contenido principal de la página.
+Todo lo que esté dentro reemplazará el bloque "content" del template base.-->
+
 <div class="row justify-content-center">
+    <!-- Crea una fila (row) centrada horizontalmente usando Bootstrap.
+    Esto asegura que el formulario quede centrado en la pantalla. -->
+
     <div class="col-md-6 col-lg-5">
+        <!--Define una columna que ocupa 6 columnas en pantallas medianas (md)
+        y 5 columnas en pantallas grandes (lg), para mantener el formulario de un tamaño adecuado.-->
+
         <div class="card bg-dark border-secondary-subtle shadow-sm rounded-4">
+            <!-- Crea una tarjeta (card) con fondo oscuro, bordes suaves, una ligera sombra
+            y esquinas redondeadas (clase personalizada "rounded-4" de Bootstrap 5). -->
+
             <div class="card-body p-4 p-lg-5">
+                <!--Cuerpo de la tarjeta, con padding interno de 4 en pantallas chicas
+                y de 5 en pantallas grandes. Contendrá todo el contenido visible.-->
+
                 <h2 class="h3 fw-bold text-white text-center mb-4">Registrarse</h2>
+                <!-- Título principal de la tarjeta, centrado, en color blanco, con fuente negrita
+                y margen inferior para separar del formulario.-->
+
                 <form method="post">
+                    <!--Inicia el formulario que enviará los datos con el método POST (para mayor seguridad).-->
+
                     {% csrf_token %}
+                    <!-- Token de seguridad obligatorio en Django que protege contra ataques CSRF.-->
+
                     {{ form|crispy }}
+                    <!-- Renderiza el formulario usando crispy-forms, que genera automáticamente
+                    los campos del formulario Django con el formato de Bootstrap.-->
+
                     <button type="submit" class="btn btn-primary w-100 mt-3">Crear cuenta</button>
+                    <!-- Botón de envío del formulario. Es de tipo "submit", ocupa todo el ancho del contenedor (w-100)
+                    y tiene un margen superior (mt-3) para separarse de los campos del formulario.-->
                 </form>
+
                 <p class="mt-4 text-center text-body-secondary">
-                    ¿Ya tenés cuenta? <a href="{% url 'login' %}" class="text-primary fw-medium">Iniciá Sesión</a>
+                    <!-- Texto debajo del formulario, centrado y en color gris claro.
+                    Sirve para redirigir a los usuarios que ya tienen una cuenta. -->
+
+                    ¿Ya tenés cuenta?
+                    <a href="{% url 'login' %}" class="text-primary fw-medium">Iniciá Sesión</a>
+                    <!-- Enlace que lleva al usuario a la vista de inicio de sesión (login),
+                    usando el nombre de URL definido en Django.-->
                 </p>
-            </div>
-        </div>
-    </div>
-</div>
-{% endblock %}

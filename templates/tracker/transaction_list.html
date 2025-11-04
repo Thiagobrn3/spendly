@@ -4,52 +4,84 @@
 {% block title %}Todas las Transacciones - Spendly{% endblock %}
 
 {% block content %}
+
+    <!-- Título principal de la página -->
     <h1 class="h2 fw-bold text-white mb-1">Todas las Transacciones</h1>
+
+    <!-- Subtítulo descriptivo -->
     <p class="text-body-secondary mb-4">
         Aquí está el historial completo de todos tus movimientos.
     </p>
 
+    <!-- Contenedor principal de las transacciones -->
     <div class="card bg-dark border-secondary-subtle shadow-sm rounded-4">
         <div class="card-body p-4 p-lg-5">
             
+            <!-- Lista de transacciones -->
             <ul class="list-group list-group-flush">
                 {% for t in transactions %}
+                <!-- Item de transacción -->
                 <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent border-secondary-subtle px-0 py-3">
+
+                    <!-- Sección izquierda: ícono + descripción -->
                     <div class="d-flex align-items-center">
-                        <div class="d-flex align-items-center justify-content-center rounded-circle me-3" style="width: 40px; height: 40px; background-color: rgba(var(--bs-primary-rgb), 0.1);">
+                        <!-- Ícono que cambia según si es gasto o ingreso -->
+                        <div class="d-flex align-items-center justify-content-center rounded-circle me-3" 
+                             style="width: 40px; height: 40px; background-color: rgba(var(--bs-primary-rgb), 0.1);">
                             <span class="material-symbols-outlined fs-5 text-primary">
                                 {% if t.type == 'gasto' %}restaurant{% else %}paid{% endif %}
                             </span>
                         </div>
+
+                        <!-- Detalles del movimiento -->
                         <div>
                             <h5 class="h6 fw-semibold text-white mb-0">{{ t.description }}</h5>
-                            <small class="text-body-secondary">{{ t.date|date:"d M, Y" }} - {{ t.cuenta.name }}</small>
+                            <small class="text-body-secondary">
+                                {{ t.date|date:"d M, Y" }} - {{ t.cuenta.name }}
+                            </small>
                         </div>
                     </div>
                     
+                    <!-- Sección derecha: monto + acciones -->
                     <div class="d-flex align-items-center gap-3">
-                        <span class="fw-semibold {% if t.type == 'gasto' %}gasto{% else %}ingreso{% endif %}" style="min-width: 80px; text-align: right;">
+                        <!-- Monto formateado según tipo -->
+                        <span class="fw-semibold {% if t.type == 'gasto' %}gasto{% else %}ingreso{% endif %}" 
+                              style="min-width: 80px; text-align: right;">
                             {% if t.type == 'gasto' %}-{% else %}+{% endif %}${{ t.amount|floatformat:2 }}
                         </span>
+
+                        <!-- Botones de acción -->
                         <div class="d-flex gap-2">
-                            <a href="{% url 'transaction_update' t.pk %}" class="btn btn-sm btn-outline-secondary d-flex align-items-center p-1" title="Editar">
+                            <!-- Editar transacción -->
+                            <a href="{% url 'transaction_update' t.pk %}" 
+                               class="btn btn-sm btn-outline-secondary d-flex align-items-center p-1" 
+                               title="Editar">
                                 <span class="material-symbols-outlined fs-6">edit</span>
                             </a>
-                            <form action="{% url 'transaction_delete' t.pk %}" method="post" onsubmit="return confirm('¿Estás seguro de que querés eliminar esta transacción?');">
+
+                            <!-- Eliminar transacción -->
+                            <form action="{% url 'transaction_delete' t.pk %}" 
+                                  method="post" 
+                                  onsubmit="return confirm('¿Estás seguro de que querés eliminar esta transacción?');">
                                 {% csrf_token %}
-                                <button type="submit" class="btn btn-sm btn-outline-danger d-flex align-items-center p-1" title="Eliminar">
+                                <button type="submit" 
+                                        class="btn btn-sm btn-outline-danger d-flex align-items-center p-1" 
+                                        title="Eliminar">
                                     <span class="material-symbols-outlined fs-6">delete</span>
                                 </button>
                             </form>
                         </div>
                     </div>
                 </li>
+
                 {% empty %}
+                <!-- Mensaje cuando no hay transacciones -->
                 <li class="list-group-item bg-transparent border-secondary-subtle px-0 py-3">
                     <p class="text-body-secondary mb-0">No tenés ninguna transacción registrada.</p>
                 </li>
                 {% endfor %}
             </ul>
-            </div>
+        </div>
     </div>
+
 {% endblock %}

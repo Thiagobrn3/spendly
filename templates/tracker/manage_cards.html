@@ -4,60 +4,93 @@
 {% block title %}Tarjetas - Spendly{% endblock %}
 
 {% block content %}
-    <h1 class="h2 fw-bold text-white mb-1">Administrar Tarjetas</h1>
-    <p class="text-body-secondary mb-4">
-        Registrá tus tarjetas con su día de cierre y vencimiento.
-    </p>
+<!-- Título principal de la página -->
+<h1 class="h2 fw-bold text-white mb-1">Administrar Tarjetas</h1>
 
-    {% if messages %}
-        {% for message in messages %}
-        <div class="alert alert-danger" role="alert">
-            {{ message }}
-        </div>
-        {% endfor %}
-    {% endif %}
+<!-- Subtítulo o descripción breve de la sección -->
+<p class="text-body-secondary mb-4">
+    Registrá tus tarjetas con su día de cierre y vencimiento.
+</p>
 
-    <div class="row g-4 g-lg-5">
-        <div class="col-lg-5">
-            <div class="card bg-dark border-secondary-subtle shadow-sm rounded-4">
-                <div class="card-body p-4 p-lg-5">
-                    <h3 class="h4 fw-bold text-white mb-4">Agregar Tarjeta</h3>
-                    <form method="post">
-                        {% csrf_token %}
-                        {{ form|crispy }}
-                        <button type="submit" class="btn btn-primary mt-3">Guardar</button>
-                    </form>
-                </div>
-            </div>
-        </div>
+<!-- Bloque para mostrar mensajes del sistema (por ejemplo errores o alertas) -->
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-danger" role="alert">
+    {{ message }}
+</div>
+{% endfor %}
+{% endif %}
 
-        <div class="col-lg-7">
-            <div class="card bg-dark border-secondary-subtle shadow-sm rounded-4">
-                <div class="card-body p-4 p-lg-5">
-                    <h3 class="h4 fw-bold text-white mb-4">Mis Tarjetas</h3>
-                    <ul class="list-group list-group-flush">
-                        {% for item in items %}
-                        <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent border-secondary-subtle px-0 py-3">
-                            <div>
-                                <h5 class="h6 fw-semibold text-white mb-0">{{ item.name }}</h5>
-                                <small class="text-body-secondary">Cierra el {{ item.closing_date }} / Vence el {{ item.due_date }}</small>
-                                <div class="gasto fw-medium">Monto a Pagar: ${{ item.get_balance_due|floatformat:2 }}</div>
-                            </div>
-                            <form action="{% url 'delete_card' item.pk %}" method="post" onsubmit="return confirm('¿Estás seguro de que querés eliminar la tarjeta \'{{ item.name }}\'?');">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-sm btn-outline-danger d-flex align-items-center" title="Eliminar">
-                                    <span class="material-symbols-outlined fs-6">delete</span>
-                                </button>
-                            </form>
-                        </li>
-                        {% empty %}
-                        <li class="list-group-item bg-transparent border-secondary-subtle px-0 py-3">
-                            <p class="text-body-secondary mb-0">No tenés tarjetas registradas.</p>
-                        </li>
-                        {% endfor %}
-                    </ul>
-                </div>
+<!-- Contenedor principal dividido en dos columnas: izquierda (formulario) y derecha (lista de tarjetas) -->
+<div class="row g-4 g-lg-5">
+
+    <!-- COLUMNA IZQUIERDA: Formulario para agregar nueva tarjeta -->
+    <div class="col-lg-5">
+        <div class="card bg-dark border-secondary-subtle shadow-sm rounded-4">
+            <div class="card-body p-4 p-lg-5">
+                <!-- Título del formulario -->
+                <h3 class="h4 fw-bold text-white mb-4">Agregar Tarjeta</h3>
+
+                <!-- Formulario de creación de tarjeta -->
+                <form method="post">
+                    {% csrf_token %}
+                    <!-- Renderiza automáticamente los campos del formulario con estilos de Crispy Forms -->
+                    {{ form|crispy }}
+                    <!-- Botón de envío del formulario -->
+                    <button type="submit" class="btn btn-primary mt-3">Guardar</button>
+                </form>
             </div>
         </div>
     </div>
+
+    <!-- COLUMNA DERECHA: Lista de tarjetas ya registradas -->
+    <div class="col-lg-7">
+        <div class="card bg-dark border-secondary-subtle shadow-sm rounded-4">
+            <div class="card-body p-4 p-lg-5">
+                <!-- Título de la lista -->
+                <h3 class="h4 fw-bold text-white mb-4">Mis Tarjetas</h3>
+
+                <!-- Lista de tarjetas -->
+                <ul class="list-group list-group-flush">
+                    {% for item in items %}
+                    <!-- Cada tarjeta se muestra como un item dentro de la lista -->
+                    <li
+                        class="list-group-item d-flex justify-content-between align-items-center bg-transparent border-secondary-subtle px-0 py-3">
+                        <div>
+                            <!-- Nombre de la tarjeta -->
+                            <h5 class="h6 fw-semibold text-white mb-0">{{ item.name }}</h5>
+
+                            <!-- Fechas de cierre y vencimiento -->
+                            <small class="text-body-secondary">
+                                Cierra el {{ item.closing_date }} / Vence el {{ item.due_date }}
+                            </small>
+
+                            <!-- Monto pendiente de pago (se muestra con formato de 2 decimales) -->
+                            <div class="gasto fw-medium">
+                                Monto a Pagar: ${{ item.get_balance_due|floatformat:2 }}
+                            </div>
+                        </div>
+
+                        <!-- Botón para eliminar la tarjeta -->
+                        <form action="{% url 'delete_card' item.pk %}" method="post"
+                            onsubmit="return confirm('¿Estás seguro de que querés eliminar la tarjeta \'{{ item.name }}\'?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-danger d-flex align-items-center"
+                                title="Eliminar">
+                                <span class="material-symbols-outlined fs-6">delete</span>
+                            </button>
+                        </form>
+                    </li>
+
+                    <!-- Si no hay tarjetas registradas, se muestra este mensaje -->
+                    {% empty %}
+                    <li class="list-group-item bg-transparent border-secondary-subtle px-0 py-3">
+                        <p class="text-body-secondary mb-0">No tenés tarjetas registradas.</p>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

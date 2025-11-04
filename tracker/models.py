@@ -1,60 +1,88 @@
 from django.db import models
 from django.contrib.auth.models import User
-# --- ¡Nuevos imports para la lógica de cálculo! ---
 import datetime
 from django.db.models import Sum
 from dateutil.relativedelta import relativedelta
-# (Asegurate de tener 'pip install python-dateutil' ejecutado)
 
-# Modelo para las Categorías de Gastos
+# ===============================
+# MODELO: Category
+# ===============================
+# Representa una categoría de gasto o ingreso, como "Comida", "Transporte", "Sueldo", etc.
+# Cada usuario puede tener sus propias categorías personalizadas.
 class Category(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    name = models.CharField(max_length=100)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)  # Relación con el usuario dueño
+    name = models.CharField(max_length=100)  # Nombre de la categoría
 
     def __str__(self):
         return self.name
 
+
+# ===============================
+# MODELO: Account
+# ===============================
+# Representa una cuenta del usuario: puede ser una cuenta bancaria, efectivo, billetera virtual, etc.
+# Se mantiene el saldo actual y se actualiza con cada transacción.
 class Account(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    name = models.CharField(max_length=100) # Ej: "Banco", "Efectivo"
-    # Saldo actual, se actualizará con cada transacción
-    balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)  # Usuario dueño de la cuenta
+    name = models.CharField(max_length=100)  # Ejemplo: "Banco Nación", "Efectivo", "Mercado Pago"
+    balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)  # Saldo actual
+
     def __str__(self):
         return self.name
 
-# Modelo para las Transacciones (Ingresos y Gastos)
+
+# ===============================
+# MODELO: Transaction
+# ===============================
+# Registra cada movimiento financiero: ingresos o gastos.
+# Está vinculada a una categoría, una cuenta, y opcionalmente a una tarjeta de crédito.
 class Transaction(models.Model):
     TYPE_CHOICES = (
         ('ingreso', 'Ingreso'),
         ('gasto', 'Gasto'),
     )
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    type = models.CharField(max_length=7, choices=TYPE_CHOICES)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
-    description = models.CharField(max_length=255)
-    date = models.DateField()
-    recurring_source = models.ForeignKey('RecurringTransaction', on_delete=models.SET_NULL, null=True, blank=True)
-    tarjeta_usada = models.ForeignKey(
-        'CreditCard', 
-        on_delete=models.SET_NULL, 
-        null=True, 
-        blank=True,
-        related_name='transactions' 
+    user = models.ForeignKey(User, on_delete=models.CASCADE)  # Usuario que realizó la transacción
+    type = models.CharField(max_length=7, choices=TYPE_CHOICES)  # Determina si es ingreso o gasto
+    amount = models.DecimalField(max_digits=10, decimal_places=2)  # Monto del movimiento
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)  # Categoría del movimiento
+    description = models.CharField(max_length=255)  # Descripción libre del gasto/ingreso
+    date = models.DateField()  # Fecha en que ocurrió la transacción
+
+    # Si la transacción proviene de un gasto fijo (RecurringTransaction)
+    recurring_source = models.ForeignKey(
+        'RecurringTransaction',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
     )
-    
+
+    # Si se realizó con una tarjeta de crédito
+    tarjeta_usada = models.ForeignKey(
+        'CreditCard',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='transactions'  # Permite acceder desde la tarjeta a sus transacciones
+    )
+
+    # Cuenta desde la cual se registró el movimiento
     cuenta = models.ForeignKey(
-        Account, 
-        on_delete=models.PROTECT, # ¡Importante!
-        null=True, # Lo hacemos nulo temporalmente para migraciones
-        blank=True # Lo haremos requerido en el form
+        Account,
+        on_delete=models.PROTECT,  # Evita que se borre una cuenta con transacciones asociadas
+        null=True,
+        blank=True
     )
 
     def __str__(self):
         return f"{self.type} de {self.amount} - {self.user.username}"
 
-# Modelo para Ingresos/Gastos Fijos
+
+# ===============================
+# MODELO: RecurringTransaction
+# ===============================
+# Define ingresos o gastos que se repiten automáticamente (mensual, semanal, etc.)
+# Ejemplo: alquiler, sueldo, abono de internet.
 class RecurringTransaction(models.Model):
     TYPE_CHOICES = (
         ('ingreso', 'Ingreso'),
@@ -63,80 +91,82 @@ class RecurringTransaction(models.Model):
     FREQUENCY_CHOICES = (
         ('mensual', 'Mensual'),
         ('semanal', 'Semanal'),
-        # Podrías agregar más (diario, anual, etc.)
+        # Se pueden agregar más frecuencias: diario, anual, etc.
     )
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    type = models.CharField(max_length=7, choices=TYPE_CHOICES)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
-    description = models.CharField(max_length=255)
-    frequency = models.CharField(max_length=10, choices=FREQUENCY_CHOICES, default='mensual')
-    start_date = models.DateField()
-    # end_date es opcional, por si es un gasto fijo que termina
-    end_date = models.DateField(null=True, blank=True) 
+    user = models.ForeignKey(User, on_delete=models.CASCADE)  # Usuario dueño
+    type = models.CharField(max_length=7, choices=TYPE_CHOICES)  # Tipo de movimiento
+    amount = models.DecimalField(max_digits=10, decimal_places=2)  # Monto fijo
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)  # Categoría del gasto
+    description = models.CharField(max_length=255)  # Descripción del ingreso/gasto fijo
+    frequency = models.CharField(max_length=10, choices=FREQUENCY_CHOICES, default='mensual')  # Frecuencia del movimiento
+    start_date = models.DateField()  # Fecha de inicio
+    end_date = models.DateField(null=True, blank=True)  # Fecha de fin (opcional)
 
     def __str__(self):
         return f"Fijo: {self.description} ({self.amount})"
 
-# Modelo para las Tarjetas de Crédito (resumen de pago)
+
+# ===============================
+# MODELO: CreditCard
+# ===============================
+# Representa una tarjeta de crédito y sus datos de resumen.
+# Permite calcular el saldo a pagar según las transacciones realizadas entre cierres.
 class CreditCard(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    name = models.CharField(max_length=100) # Ej: "Visa Banco X", "Mastercard Banco Y"
+    user = models.ForeignKey(User, on_delete=models.CASCADE)  # Usuario dueño de la tarjeta
+    name = models.CharField(max_length=100)  # Ejemplo: "Visa Santander", "Mastercard Galicia"
     
-    closing_date = models.IntegerField(default=1) # Día del mes del CIERRE (ej: 25)
-    due_date = models.IntegerField() # Día del mes del vencimiento (ej: 10)
+    closing_date = models.IntegerField(default=1)  # Día del mes en que cierra el resumen (ej: 25)
+    due_date = models.IntegerField()  # Día del mes en que vence el pago (ej: 10)
     
-    # 'balance_due' fue eliminado de la base de datos
+    # Ya no se guarda el balance_due: se calcula dinámicamente
 
     def __str__(self):
         return self.name
 
-    # --- ¡LÓGICA DE CÁLCULO! ---
+    # --- Lógica de cálculo del saldo ---
     @property
     def get_balance_due(self):
         """
         Calcula el saldo a pagar en el próximo vencimiento.
-        Busca el último resumen cerrado.
+        Busca el último resumen cerrado y suma los gastos hechos entre ese
+        y el cierre anterior.
         """
-        
-        # --- ¡ESTA ES LA LÍNEA QUE FALTABA! ---
-        # El error "name 'today' is not defined" significa que
-        # esta línea fue omitida.
         today = datetime.date.today()
-        
-        # 1. Encontrar la fecha del último cierre
-        # Si hoy es 4/Nov y el cierre es el 25, el último cierre fue el 25/Oct.
-        # Si hoy es 28/Nov y el cierre es el 25, el último cierre fue el 25/Nov.
+
+        # 1. Determinar la fecha del último cierre
+        # Ejemplo: si hoy es 4/Nov y el cierre es 25 → el último fue 25/Oct.
         if today.day <= self.closing_date:
-            # El cierre de este mes aún no pasó. Buscamos el del mes pasado.
             last_closing_date = today.replace(day=self.closing_date) - relativedelta(months=1)
         else:
-            # El cierre de este mes ya pasó.
             last_closing_date = today.replace(day=self.closing_date)
-            
-        # 2. Encontrar la fecha del cierre anterior a ese
+        
+        # 2. Fecha del cierre anterior
         previous_closing_date = last_closing_date - relativedelta(months=1)
 
-        # 3. Sumar todas las transacciones (gastos) entre esas dos fechas
+        # 3. Sumar los gastos hechos entre esos dos cierres
         balance = self.transactions.filter(
-            date__gt=previous_closing_date, # Mayor que (excluye)
-            date__lte=last_closing_date,   # Menor o igual que (incluye)
+            date__gt=previous_closing_date,  # Mayor que (excluye la fecha anterior)
+            date__lte=last_closing_date,     # Menor o igual que (incluye el cierre)
             type='gasto'
         ).aggregate(Sum('amount'))['amount__sum'] or 0.00
         
         return balance
+
+
+# ===============================
+# MODELO: Budget
+# ===============================
+# Permite establecer un presupuesto mensual por categoría.
+# Por ejemplo: "Comida - $20.000" o "Entretenimiento - $10.000".
 class Budget(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    # El presupuesto está vinculado directamente a una categoría
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    # El monto límite (ej: 20000)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    # (Para esta primera versión, asumimos que todos los presupuestos son mensuales)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)  # Usuario al que pertenece
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)  # Categoría asignada
+    amount = models.DecimalField(max_digits=10, decimal_places=2)  # Monto límite mensual
 
     def __str__(self):
         return f"Presupuesto de {self.category.name} - {self.user.username}"
 
     class Meta:
-        # Esto evita que un usuario cree dos presupuestos para la misma categoría
+        # Evita presupuestos duplicados en la misma categoría y usuario
         unique_together = ('user', 'category')

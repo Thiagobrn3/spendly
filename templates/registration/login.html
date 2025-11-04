@@ -1,24 +1,46 @@
-{% extends "base.html" %}
-{% load crispy_forms_tags %}
+{% extends "base.html" %}  
+<!--Hereda la estructura general de la plantilla base (header, estilos, scripts, etc.)-->
 
-{% block title %}Iniciar Sesión - Spendly{% endblock %}
+{% load crispy_forms_tags %}  
+<!-- Carga la librería 'crispy_forms' para renderizar formularios de Django con mejor formato y estilos Bootstrap -->
+
+{% block title %}Iniciar Sesión - Spendly{% endblock %}  
+<!--Define el título que aparece en la pestaña del navegador para esta página de login-->
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6 col-lg-5">
-        <div class="card bg-dark border-secondary-subtle shadow-sm rounded-4">
-            <div class="card-body p-4 p-lg-5">
+<!-- ======== CONTENEDOR PRINCIPAL DEL LOGIN ======== -->
+<div class="row justify-content-center">  <!-- Centra el formulario horizontalmente -->
+    <div class="col-md-6 col-lg-5">  <!-- Define el ancho del formulario según el tamaño de pantalla -->
+        <div class="card bg-dark border-secondary-subtle shadow-sm rounded-4">  
+            <!-- Tarjeta visual con fondo oscuro, bordes sutiles y bordes redondeados -->
+            
+            <div class="card-body p-4 p-lg-5">  
+                <!-- Contenedor del contenido principal de la tarjeta con padding adaptativo -->
+                
                 <h2 class="h3 fw-bold text-white text-center mb-4">Iniciar Sesión</h2>
-                <form method="post">
-                    {% csrf_token %}
-                    {{ form|crispy }}
-                    <button type="submit" class="btn btn-primary w-100 mt-3">Ingresar</button>
+                {# Título centrado en blanco, con un margen inferior para separar del formulario #}
+                
+                <!-- ======== FORMULARIO DE LOGIN ======== -->
+                <form method="post">  
+                    {% csrf_token %}  
+                    <!--Token de seguridad obligatorio en formularios POST de Django para prevenir ataques CSRF-->
+                    
+                    {{ form|crispy }}  
+                    <!-- Renderiza el formulario automáticamente con los estilos de crispy_forms -->
+                    
+                    <button type="submit" class="btn btn-primary w-100 mt-3">Ingresar</button>  
+                    <!--Botón principal para enviar el formulario, ocupa todo el ancho (w-100) -->
                 </form>
+
+                <!-- ======== ENLACE DE REGISTRO ======== -->
                 <p class="mt-4 text-center text-body-secondary">
-                    ¿No tenés cuenta? <a href="{% url 'signup' %}" class="text-primary fw-medium">Registrate</a>
+                    ¿No tenés cuenta? 
+                    <a href="{% url 'signup' %}" class="text-primary fw-medium">Registrate</a>
+                    <!-- Link que lleva a la vista de registro de usuarios -->
                 </p>
-            </div>
-        </div>
-    </div>
-</div>
+
+            </div>  <!-- Cierre card-body -->
+        </div>  <!-- Cierre card -->
+    </div>  <!-- Cierre col -->
+</div>  <!-- Cierre row -->
 {% endblock %}

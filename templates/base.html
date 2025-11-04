@@ -6,11 +6,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
 
+    <!-- Chart.js para gráficos -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+    <!-- Tipografía e íconos -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -18,48 +21,35 @@
 
     <style>
         :root {
-            /* 1. Colores de la referencia */
+            /* 🎨 Paleta principal */
             --bs-primary: #10B981;
             --bs-primary-rgb: 16, 185, 129;
             --bs-link-color: #10B981;
             --bs-link-hover-color: #059669;
 
-            /* 2. Colores del modo oscuro */
+            /* 🌙 Modo oscuro */
             --bs-dark: #111827;
             --bs-body-bg: #111827;
             --bs-body-color: #9ca3af;
             --bs-border-color: #374151;
             --bs-light: #F9FAFB;
 
-            /* 3. Colores de Componentes */
+            /* 🧱 Fondo de tarjetas y modales */
             --bs-card-bg: #1f2937;
             --bs-dark-bg-subtle: #1f2937;
-            /* Fondo de Modal */
         }
 
-        /* ==============================================
-           ¡LA CORRECCIÓN DE FORMULARIOS!
-           Sobrescribimos las variables de formulario de BS5.3
-           ==============================================
-        */
         [data-bs-theme="dark"] {
-            /* * Fondo del Input/Select:
-             * Le decimos que use nuestro fondo de body (#111827)
-             * en lugar de su azul por defecto.
-            */
+            /* Colores base de inputs/selects en modo oscuro */
             --bs-form-control-bg: #111827;
             --bs-form-select-bg: #111827;
-
-            /* Color de texto */
             --bs-form-control-color: #f9fafb;
             --bs-form-select-color: #f9fafb;
-
-            /* Color de borde */
             --bs-form-control-border-color: #374151;
             --bs-form-select-border-color: #374151;
         }
 
-        /* 4. Fuente de la referencia */
+        /* 🧩 Tipografía general */
         body,
         .btn,
         .navbar-brand,
@@ -72,7 +62,7 @@
             font-family: 'Inter', sans-serif;
         }
 
-        /* 5. Estilos de Navbar */
+        /* 🔗 Estilos de enlaces de la navbar */
         .navbar-nav .nav-link {
             font-weight: 500;
             color: var(--bs-gray-400);
@@ -83,7 +73,7 @@
             color: var(--bs-primary);
         }
 
-        /* 6. Estilo de Botón Primario */
+        /* 🟢 Botón principal (verde) */
         .btn-primary {
             --bs-btn-bg: var(--bs-primary);
             --bs-btn-border-color: var(--bs-primary);
@@ -93,7 +83,7 @@
             --bs-btn-font-weight: 700;
         }
 
-        /* 7. Estilo de "gasto" e "ingreso" */
+        /* 🔻 Colores visuales para tipos de transacción */
         .gasto {
             color: #EF4444;
             font-weight: 600;
@@ -104,24 +94,123 @@
             font-weight: 600;
         }
 
-        /* 8. Iconos Material */
+        /* 🧭 Íconos de Google Material */
         .material-symbols-outlined {
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24
         }
 
-        /* 9. Color del 'placeholder' */
+        /* 💬 Placeholder más tenue en modo oscuro */
         [data-bs-theme="dark"] .form-control::placeholder {
             color: #6b7280;
         }
 
-        /* 10. Estilos al hacer clic (focus) */
+        /* ✨ Estilo de inputs al enfocar */
         [data-bs-theme="dark"] .form-control:focus,
         [data-bs-theme="dark"] .form-select:focus {
             background-color: #1f2937;
-            /* Color de tarjeta */
             border-color: var(--bs-primary);
             color: #f9fafb;
             box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+        }
+
+        /* === Ajuste general para formularios en tema oscuro === */
+        input.form-control,
+        select.form-select,
+        textarea.form-control {
+            background-color: #1f2937 !important;
+            /* mismo color que las tarjetas */
+            color: #f8f9fa !important;
+            /* texto claro */
+            border: 1px solid #374151 !important;
+            /* borde sutil gris */
+            border-radius: 8px;
+        }
+
+        input.form-control:focus,
+        select.form-select:focus,
+        textarea.form-control:focus {
+            background-color: #111827 !important;
+            /* un poco más oscuro al enfocar */
+            color: #fff !important;
+            border-color: #3b82f6 !important;
+            /* azul claro de acento (podés cambiarlo) */
+            box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+            /* sombra sutil */
+        }
+
+        /* === Labels y textos === */
+        label {
+            color: #e5e7eb !important;
+            font-weight: 500;
+        }
+
+        /* === Placeholders === */
+        ::placeholder {
+            color: #9ca3af !important;
+            /* gris claro */
+        }
+
+        /* === Botones de formulario === */
+        button.btn-primary {
+            background-color: #3b82f6 !important;
+            /* azul de acento */
+            border: none;
+        }
+
+        button.btn-primary:hover {
+            background-color: #2563eb !important;
+        }
+
+        button.btn-outline-secondary {
+            color: #9ca3af !important;
+            border-color: #4b5563 !important;
+        }
+
+        button.btn-outline-secondary:hover {
+            background-color: #374151 !important;
+        }
+
+        /* === Mensajes de error === */
+        .is-invalid {
+            border-color: #ef4444 !important;
+        }
+
+        .invalid-feedback {
+            color: #f87171 !important;
+        }
+
+        .modal-content {
+            background-color: #1f2937 !important;
+            /* mismo color que las tarjetas */
+            border: 1px solid #374151 !important;
+            /* borde gris oscuro sutil */
+            color: #f9fafb !important;
+            /* texto claro */
+        }
+
+        /* Header del modal */
+        .modal-header {
+            border-bottom: 1px solid #374151 !important;
+        }
+
+        /* Footer del modal */
+        .modal-footer {
+            border-top: 1px solid #374151 !important;
+        }
+
+        /* Título del modal */
+        .modal-title {
+            color: #f9fafb !important;
+        }
+
+        /* Botón de cerrar (la “X”) */
+        .btn-close {
+            filter: invert(1) grayscale(100%) brightness(150%);
+        }
+
+        /* Ajustar backdrop (fondo detrás del modal) */
+        .modal-backdrop.show {
+            background-color: rgba(0, 0, 0, 0.8) !important;
         }
     </style>
 
@@ -130,11 +219,13 @@
 
 <body class="bg-dark text-light">
 
+    <!-- 🧭 Barra de navegación superior -->
     <header
         class="navbar navbar-expand-md navbar-dark bd-navbar sticky-top bg-dark border-bottom border-secondary-subtle"
         style="--bs-bg-opacity: 0.8; backdrop-filter: blur(8px);">
         <nav class="container-xxl flex-wrap flex-md-nowrap" aria-label="Main navigation">
 
+            <!-- Logo + Nombre -->
             <a class="navbar-brand p-0 me-4 d-flex align-items-center" href="{% url 'index' %}">
                 <svg fill="var(--bs-primary)" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"
                     style="width: 24px; height: 24px;">
@@ -142,38 +233,37 @@
                         d="M44 11.2727C44 14.0109 39.8386 16.3957 33.69 17.6364C39.8386 18.877 44 21.2618 44 24C44 26.7382 39.8386 29.123 33.69 30.3636C39.8386 31.6043 44 33.9891 44 36.7273C44 40.7439 35.0457 44 24 44C12.9543 44 4 40.7439 4 36.7273C4 33.9891 8.16144 31.6043 14.31 30.3636C8.16144 29.123 4 26.7382 4 24C4 21.2618 8.16144 18.877 14.31 17.6364C8.16144 16.3957 4 14.0109 4 11.2727C4 7.25611 12.9543 4 24 4C35.0457 4 44 7.25611 44 11.2727Z">
                     </path>
                 </svg>
-                <span class="ms-2 fs-5 fw-bold" style="color: white;">Spendly</span>
+                <span class="ms-2 fs-5 fw-bold text-white">Spendly</span>
             </a>
 
+            <!-- Botón responsive -->
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#bdNavbar"
                 aria-controls="bdNavbar" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
+            <!-- Menú principal -->
             <div class="collapse navbar-collapse" id="bdNavbar">
                 {% if user.is_authenticated %}
                 <ul class="navbar-nav flex-row flex-wrap bd-navbar-nav pt-2 py-md-0 ms-md-auto">
-                    
-                    <li class="nav-item col-6 col-md-auto">
-                        <a class="nav-link {% if request.resolver_match.url_name == 'index' %}active{% endif %}" 
-                           href="{% url 'index' %}">Dashboard</a>
-                    </li>
-                    
-                    <li class="nav-item col-6 col-md-auto">
-                        <a class="nav-link {% if request.resolver_match.url_name == 'transaction_list' %}active{% endif %}" 
-                           href="{% url 'transaction_list' %}">Transacciones</a>
-                    </li>
-                    
-                    <li class="nav-item col-6 col-md-auto">
-                        <a class="nav-link {% if request.resolver_match.url_name == 'manage_budgets' %}active{% endif %}" 
-                           href="{% url 'manage_budgets' %}">Presupuestos</a>
-                    </li>
-                    
-                    <li class="nav-item col-6 col-md-auto">
-                        <a class="nav-link {% if request.resolver_match.url_name == 'reports' %}active{% endif %}" 
-                           href="{% url 'reports' %}">Informes</a>
-                    </li>
 
+                    <!-- Ítems de navegación -->
+                    <li class="nav-item col-6 col-md-auto">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'index' %}active{% endif %}"
+                            href="{% url 'index' %}">Dashboard</a>
+                    </li>
+                    <li class="nav-item col-6 col-md-auto">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'transaction_list' %}active{% endif %}"
+                            href="{% url 'transaction_list' %}">Transacciones</a>
+                    </li>
+                    <li class="nav-item col-6 col-md-auto">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'manage_budgets' %}active{% endif %}"
+                            href="{% url 'manage_budgets' %}">Presupuestos</a>
+                    </li>
+                    <li class="nav-item col-6 col-md-auto">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'reports' %}active{% endif %}"
+                            href="{% url 'reports' %}">Informes</a>
+                    </li>
                     <li class="nav-item col-6 col-md-auto">
                         <a class="nav-link {% if request.resolver_match.url_name == 'manage_accounts' %}active{% endif %}"
                             href="{% url 'manage_accounts' %}">Cuentas</a>
@@ -188,8 +278,7 @@
                     </li>
                 </ul>
 
-                <hr class="d-md-none text-white-50">
-
+                <!-- Botón de cierre de sesión -->
                 <ul class="navbar-nav flex-row flex-wrap ms-md-3">
                     <li class="nav-item col-6 col-md-auto ms-2">
                         <form action="{% url 'logout' %}" method="post" class="d-flex">
@@ -198,7 +287,9 @@
                         </form>
                     </li>
                 </ul>
+
                 {% else %}
+                <!-- Menú para usuarios no logueados -->
                 <ul class="navbar-nav flex-row flex-wrap bd-navbar-nav pt-2 py-md-0 ms-md-auto">
                     <li class="nav-item col-6 col-md-auto">
                         <a class="nav-link" href="{% url 'login' %}">Login</a>
@@ -212,11 +303,13 @@
         </nav>
     </header>
 
+    <!-- Contenido dinámico -->
     <main class="container-xl my-4 my-lg-5">
         {% block content %}
         {% endblock %}
     </main>
 
+    <!-- Scripts Bootstrap -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
         crossorigin="anonymous"></script>
