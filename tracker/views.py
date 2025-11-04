@@ -217,18 +217,20 @@ def transaction_update(request, pk):
         form = TransactionForm(request.POST, instance=transaction, user=request.user)
         if form.is_valid():
             
-            # 1. Revertimos el valor antiguo
-            if old_type == 'ingreso':
-                old_cuenta.balance = F('balance') - old_amount
-            elif old_type == 'gasto':
-                old_cuenta.balance = F('balance') + old_amount
-            old_cuenta.save()
+            # 1. Revertimos el valor antiguo (¡SOLO SI HABÍA UNA CUENTA!)
+            if old_cuenta:
+                if old_type == 'ingreso':
+                    old_cuenta.balance = F('balance') - old_amount
+                elif old_type == 'gasto':
+                    old_cuenta.balance = F('balance') + old_amount
+                old_cuenta.save()
 
             # 2. Aplicamos el valor nuevo
             new_transaction = form.save(commit=False)
             new_cuenta = new_transaction.cuenta
             new_amount = new_transaction.amount
             
+            # (La nueva transacción SIEMPRE tendrá una cuenta gracias al form)
             if new_transaction.type == 'ingreso':
                 new_cuenta.balance = F('balance') + new_amount
             elif new_transaction.type == 'gasto':
@@ -246,8 +248,7 @@ def transaction_update(request, pk):
         'transaction': transaction
     }
     return render(request, 'tracker/transaction_form.html', context)
-
-# --- Eliminar Transacción (CORREGIDA CON F()) ---
+# --- Eliminar Transacción ---
 @login_required
 @require_POST 
 def transaction_delete(request, pk):
@@ -255,17 +256,16 @@ def transaction_delete(request, pk):
     
     cuenta = transaction.cuenta
     amount = transaction.amount
-
-    if transaction.type == 'ingreso':
-        cuenta.balance = F('balance') - amount
-    elif transaction.type == 'gasto':
-        cuenta.balance = F('balance') + amount
-        
-    cuenta.save()
+    if cuenta:
+        if transaction.type == 'ingreso':
+            cuenta.balance = F('balance') - amount
+        elif transaction.type == 'gasto':
+            cuenta.balance = F('balance') + amount
+        cuenta.save()
+    
     transaction.delete()
     
-    return redirect('index')
-@login_required
+    return redirect('index')@login_required
 def manage_recurring(request):
     if request.method == 'POST':
         form = RecurringTransactionForm(request.POST, user=request.user)
