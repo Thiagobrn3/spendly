@@ -1,40 +1,120 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
 
-{% block title %}Añadir Movimiento - Spendly{% endblock %}
+{% block title %}Informes Anuales - Spendly{% endblock %}
 
 {% block content %}
 
-<!-- Contenedor principal centrado en la pantalla -->
-<div class="row justify-content-center">
-    <div class="col-lg-8">
-        <!-- Tarjeta oscura con borde sutil que contiene el formulario -->
-        <div class="card bg-dark border-secondary-subtle shadow-sm rounded-4">
-            <div class="card-body p-4 p-lg-5">
+<h1 class="h2 fw-bold text-white mb-1">Informes Anuales</h1>
+<p class="text-body-secondary mb-4">
+    Resumen de ingresos y gastos mes a mes del año actual.
+</p>
 
-                <!-- Título del formulario -->
-                <h2 class="h3 fw-bold text-white mb-4">Añadir Movimiento</h2>
-
-                <!-- Formulario para registrar un nuevo gasto o ingreso -->
-                <form method="post">
-                    {% csrf_token %}
-
-                    <!-- Renderiza automáticamente todos los campos definidos en el formulario Django -->
-                    {{ form|crispy }}
-
-                    <!-- Botones de acción alineados a la derecha -->
-                    <div class="d-flex justify-content-end gap-2 mt-4">
-                        <!-- Enlace para volver al dashboard sin guardar -->
-                        <a href="{% url 'index' %}" class="btn btn-outline-secondary">Cancelar</a>
-
-                        <!-- Botón principal para guardar la nueva transacción -->
-                        <button type="submit" class="btn btn-primary">Guardar</button>
-                    </div>
-                </form>
-
-            </div>
+<div class="card bg-dark border-secondary-subtle shadow-sm rounded-4">
+    <div class="card-body p-4 p-lg-5">
+        <h3 class="h4 fw-bold text-white mb-4">Flujo de Caja Anual</h3>
+        
+        <div style="position: relative; height: 400px;">
+            <canvas id="myBarChart"></canvas>
         </div>
+        
     </div>
 </div>
+
+{{ chart_labels|json_script:"chart-labels" }}
+{{ chart_ingresos|json_script:"chart-ingresos" }}
+{{ chart_gastos|json_script:"chart-gastos" }}
+
+<script>
+    // Inicializa el contexto del gráfico
+    const ctx = document.getElementById('myBarChart').getContext('2d');
+    
+    // Obtiene los datos del JSON (vienen de tracker/views.py)
+    const labels = JSON.parse(document.getElementById('chart-labels').textContent);
+    const ingresos = JSON.parse(document.getElementById('chart-ingresos').textContent);
+    const gastos = JSON.parse(document.getElementById('chart-gastos').textContent);
+    
+    // Crea el gráfico de barras comparando ingresos y gastos
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Ingresos',
+                    data: ingresos,
+                    backgroundColor: '#22C55E', // Verde (ingreso)
+                    borderRadius: 4,
+                },
+                {
+                    label: 'Gastos',
+                    data: gastos,
+                    backgroundColor: '#EF4444', // Rojo (gasto)
+                    borderRadius: 4,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        color: '#e5e7eb', // Color de las etiquetas
+                        font: { size: 14 }
+                    }
+                },
+                title: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: '#1f2937',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    borderColor: '#374151',
+                    borderWidth: 1,
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.y !== null) {
+                                // Formato de moneda con dos decimales
+                                label += '$' + context.parsed.y.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                            }
+                            return label;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: '#374151', // Color de las líneas de la grilla
+                        borderColor: '#374151'
+                    },
+                    ticks: {
+                        color: '#9ca3af', // Color de los números del eje Y
+                        callback: function(value, index, ticks) {
+                            return '$' + value.toFixed(0); // Mostrar en formato moneda
+                        }
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false // Ocultar líneas verticales de la grilla
+                    },
+                    ticks: {
+                        color: '#9ca3af' // Color de las etiquetas del eje X
+                    }
+                }
+            }
+        }
+    });
+
+</script>
 
 {% endblock %}
